@@ -25,7 +25,7 @@ export function DropZone({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="relative flex-1"
+      className="relative min-w-0 flex-1"
       onDragEnter={(e) => {
         e.preventDefault()
         depth.current++

@@ -7,19 +7,20 @@ import { Inspector } from './editor/Inspector'
 import { DropZone } from './editor/DropZone'
 import { TrackingOverlay } from './components/TrackingOverlay'
 import { CalibrationWizard } from './components/CalibrationWizard'
+import { useFittedSize } from './hooks/useFittedSize'
 
-function aspectValue(mode: string, custom: number): string | undefined {
+function aspectRatioOf(mode: string, custom: number): number | null {
   switch (mode) {
     case '16:9':
-      return '16 / 9'
+      return 16 / 9
     case '4:3':
-      return '4 / 3'
+      return 4 / 3
     case '1:1':
-      return '1 / 1'
+      return 1
     case 'custom':
-      return `${custom} / 1`
+      return custom > 0 ? custom : null
     default:
-      return undefined
+      return null
   }
 }
 
@@ -31,7 +32,8 @@ export default function App() {
   const calibrating = useScene((s) => s.calibrating)
   const setCalibrating = useScene((s) => s.setCalibrating)
 
-  const ar = aspectValue(aspectMode, customAspect)
+  const ratio = aspectRatioOf(aspectMode, customAspect)
+  const { ref, size } = useFittedSize(ratio)
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -39,12 +41,12 @@ export default function App() {
       <div className="flex min-h-0 flex-1">
         <Outliner />
         <DropZone>
-          <div className="flex h-full w-full items-center justify-center bg-black p-2">
+          <div ref={ref} className="flex h-full w-full items-center justify-center overflow-hidden bg-black">
             <div
-              className="relative h-full w-full max-h-full max-w-full overflow-hidden rounded"
-              style={ar ? { aspectRatio: ar, width: 'auto', height: '100%' } : undefined}
+              className="relative overflow-hidden rounded"
+              style={{ width: size.width, height: size.height }}
             >
-              <Studio head={head} />
+              {size.width > 0 && <Studio head={head} />}
               {headSource === 'face' && (
                 <TrackingOverlay status={status} message={message} video={videoRef} />
               )}

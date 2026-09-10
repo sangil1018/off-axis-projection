@@ -113,7 +113,7 @@ const uid = () => Math.random().toString(36).slice(2, 10)
 
 export const DEFAULT_SETTINGS: Settings = {
   resolutionScale: 1,
-  aspectMode: 'fill',
+  aspectMode: '16:9',
   customAspect: 16 / 9,
   screenWidthM: 0.6,
   screenHeightM: 0.34,
