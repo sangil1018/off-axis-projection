@@ -311,3 +311,7 @@ export const useScene = create<SceneState>()(
     },
   ),
 )
+
+if (import.meta.env.DEV) {
+  ;(window as unknown as { __store?: unknown }).__store = useScene
+}

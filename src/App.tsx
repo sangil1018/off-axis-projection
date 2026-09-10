@@ -35,6 +35,10 @@ export default function App() {
   const ratio = aspectRatioOf(aspectMode, customAspect)
   const { ref, size } = useFittedSize(ratio)
 
+  if (import.meta.env.DEV) {
+    ;(window as unknown as { __head?: unknown }).__head = head
+  }
+
   return (
     <div className="flex h-full w-full flex-col">
       <Toolbar />
