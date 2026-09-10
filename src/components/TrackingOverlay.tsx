@@ -1,15 +1,7 @@
 import { useEffect, useRef } from 'react'
-import type { TrackStatus } from '../hooks/useHeadTracking'
+import type { TrackStatus, HeadSource } from '../hooks/useHeadTracking'
 import { useScene } from '../store/sceneStore'
 
-const LABEL: Record<TrackStatus, string> = {
-  idle: '대기',
-  loading: '모델 로딩',
-  tracking: '얼굴 추적중',
-  searching: '얼굴 탐색중',
-  mouse: '마우스 모드',
-  error: '오류',
-}
 const COLOR: Record<TrackStatus, string> = {
   idle: 'bg-slate-500',
   loading: 'bg-amber-500',
@@ -19,11 +11,33 @@ const COLOR: Record<TrackStatus, string> = {
   error: 'bg-rose-500',
 }
 
+function label(status: TrackStatus, source: HeadSource): string {
+  const noun = source === 'hand' ? '손' : '얼굴'
+  switch (status) {
+    case 'idle':
+      return '대기'
+    case 'loading':
+      return '모델 로딩'
+    case 'tracking':
+      return `${noun} 추적중`
+    case 'searching':
+      return `${noun} 탐색중`
+    case 'mouse':
+      return '마우스 모드'
+    case 'error':
+      return '오류'
+    default:
+      return '대기'
+  }
+}
+
 export function TrackingOverlay({
+  source,
   status,
   message,
   video,
 }: {
+  source: HeadSource
   status: TrackStatus
   message: string
   video: React.MutableRefObject<HTMLVideoElement | null>
@@ -45,7 +59,7 @@ export function TrackingOverlay({
       <div ref={holder} className="aspect-video w-full bg-black" />
       <div className="flex items-center gap-2 px-2 py-1.5">
         <span className={`h-2 w-2 rounded-full ${COLOR[status]}`} />
-        <span className="flex-1 truncate">{LABEL[status]}</span>
+        <span className="flex-1 truncate">{label(status, source)}</span>
         {status === 'error' && (
           <button
             className="rounded bg-sky-600 px-1.5 py-0.5"

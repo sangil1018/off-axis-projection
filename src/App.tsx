@@ -51,8 +51,13 @@ export default function App() {
               style={{ width: size.width, height: size.height }}
             >
               {size.width > 0 && <Studio head={head} />}
-              {headSource === 'face' && (
-                <TrackingOverlay status={status} message={message} video={videoRef} />
+              {headSource !== 'mouse' && (
+                <TrackingOverlay
+                  source={headSource}
+                  status={status}
+                  message={message}
+                  video={videoRef}
+                />
               )}
             </div>
           </div>

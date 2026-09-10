@@ -7,7 +7,9 @@
 
 - **Off-axis 프로젝션**: 물리 스크린 크기를 기준으로 한 generalized perspective
   projection (Kooima 2008). 머리를 움직이면 화면이 "창문 너머 공간"처럼 보임.
-- **헤드 트래킹**: MediaPipe FaceLandmarker(웹캠). 웹캠 불가 시 마우스 폴백 자동 전환.
+- **시점 트래킹**: MediaPipe로 **얼굴 / 손** 중 선택(웹캠), 또는 **마우스**.
+  얼굴은 양안, 손은 손바닥 중심 + 손가락 관절 폭을 깊이(z) 추정에 사용.
+  웹캠 불가 시 마우스로 자동 전환.
 - **glTF / GLB**: 창에 드래그드롭, 또는 툴바에서 라이브러리 모델 / URL 로 추가.
   로드 시 자동으로 크기·위치가 보정됨(auto-fit). TransformControls 기즈모(T/R/S)로
   이동·회전·스케일, Inspector에서 수치 편집. **DRACO · Meshopt · KTX2** 압축 GLB 지원

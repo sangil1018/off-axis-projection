@@ -156,9 +156,13 @@ export function Inspector() {
         </Row>
       </Section>
 
-      <Section title="Head Tracking">
+      <Section title="Viewpoint Tracking">
         <Row label="Source">
-          <Select value={settings.headSource} options={['face', 'mouse'] as const} onChange={(v) => set({ headSource: v })} />
+          <Select
+            value={settings.headSource}
+            options={['face', 'hand', 'mouse'] as const}
+            onChange={(v) => set({ headSource: v })}
+          />
         </Row>
         <Row label="Strength X">
           <Slider min={0} max={4} value={settings.strengthX} onChange={(v) => set({ strengthX: v })} />

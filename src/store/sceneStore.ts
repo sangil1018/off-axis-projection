@@ -60,8 +60,8 @@ export type Settings = {
   // camera
   near: number
   far: number
-  // head tracking
-  headSource: 'face' | 'mouse'
+  // viewpoint tracking
+  headSource: 'face' | 'hand' | 'mouse'
   strengthX: number
   strengthY: number
   strengthZ: number

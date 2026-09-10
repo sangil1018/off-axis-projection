@@ -1,20 +1,34 @@
 import { useEffect, useRef, useState } from 'react'
-import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision'
+import {
+  FaceLandmarker,
+  HandLandmarker,
+  FilesetResolver,
+} from '@mediapipe/tasks-vision'
 import { HeadSmoother } from '../three/headPose'
 import { useScene } from '../store/sceneStore'
 
-export type TrackStatus = 'idle' | 'loading' | 'tracking' | 'searching' | 'mouse' | 'error'
+export type TrackStatus =
+  | 'idle'
+  | 'loading'
+  | 'tracking'
+  | 'searching'
+  | 'mouse'
+  | 'error'
 
 export type HeadRef = { x: number; y: number; z: number }
+export type HeadSource = 'face' | 'hand' | 'mouse'
 
 const WASM_CDN =
   'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/wasm'
-const MODEL_URL =
+const FACE_MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
+const HAND_MODEL_URL =
+  'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task'
 
 /**
- * Shared head position (meters, relative to screen centre) updated every frame.
- * `head` is a stable ref you can read inside useFrame.
+ * Shared viewpoint position (meters, relative to screen centre) updated every
+ * frame. `head` is a stable ref you can read inside useFrame. The source can be
+ * the webcam face, the webcam hand, or the mouse.
  */
 export function useHeadTracking() {
   const head = useRef<HeadRef>({ x: 0, y: 0, z: 0.6 })
@@ -51,10 +65,11 @@ export function useHeadTracking() {
     return () => window.removeEventListener('pointermove', onMove)
   }, [headSource])
 
-  // ---- face tracking ----
+  // ---- webcam face / hand tracking (MediaPipe Tasks Vision) ----
   useEffect(() => {
-    if (headSource !== 'face') return
-    let landmarker: FaceLandmarker | null = null
+    if (headSource !== 'face' && headSource !== 'hand') return
+    const isHand = headSource === 'hand'
+    let landmarker: FaceLandmarker | HandLandmarker | null = null
     let stream: MediaStream | null = null
     let raf = 0
     let cancelled = false
@@ -67,13 +82,19 @@ export function useHeadTracking() {
     ;(async () => {
       try {
         setStatus('loading')
-        setMessage('얼굴 추적 모델 로딩 중…')
+        setMessage(isHand ? '손 추적 모델 로딩 중…' : '얼굴 추적 모델 로딩 중…')
         const fileset = await FilesetResolver.forVisionTasks(WASM_CDN)
-        landmarker = await FaceLandmarker.createFromOptions(fileset, {
-          baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
-          runningMode: 'VIDEO',
-          numFaces: 1,
-        })
+        landmarker = isHand
+          ? await HandLandmarker.createFromOptions(fileset, {
+              baseOptions: { modelAssetPath: HAND_MODEL_URL, delegate: 'GPU' },
+              runningMode: 'VIDEO',
+              numHands: 1,
+            })
+          : await FaceLandmarker.createFromOptions(fileset, {
+              baseOptions: { modelAssetPath: FACE_MODEL_URL, delegate: 'GPU' },
+              runningMode: 'VIDEO',
+              numFaces: 1,
+            })
         if (cancelled) return
 
         stream = await navigator.mediaDevices.getUserMedia({
@@ -84,30 +105,51 @@ export function useHeadTracking() {
         await video.play()
         smoother.current.reset()
         setStatus('searching')
-        setMessage('얼굴을 찾는 중…')
+        setMessage(isHand ? '손을 찾는 중…' : '얼굴을 찾는 중…')
 
         const loop = () => {
           if (cancelled || !landmarker) return
           raf = requestAnimationFrame(loop)
           if (video.readyState < 2) return
-          const res = landmarker.detectForVideo(video, performance.now())
-          const lm = res.faceLandmarks?.[0]
-          if (!lm) {
-            if (status !== 'searching') setStatus('searching')
-            return
-          }
           const s = settingsRef.current
-          const rEye = lm[33]
-          const lEye = lm[263]
-          const midX = (rEye.x + lEye.x) / 2
-          const midY = (rEye.y + lEye.y) / 2
-          const ipd = Math.hypot(lEye.x - rEye.x, lEye.y - rEye.y) || 0.12
+          const now = performance.now()
 
-          // webcam is mirrored: invert X so leaning right -> view moves right
-          const x = (0.5 - midX) * s.screenWidthM * 3.2 * s.strengthX
-          const y = (0.5 - midY) * s.screenHeightM * 3.2 * s.strengthY
+          let px: number, py: number, spread: number, refSpread: number
+
+          if (isHand) {
+            const res = (landmarker as HandLandmarker).detectForVideo(video, now)
+            const lm = res.landmarks?.[0]
+            if (!lm) {
+              setStatus('searching')
+              return
+            }
+            // palm centre = wrist + index-MCP + pinky-MCP
+            px = (lm[0].x + lm[5].x + lm[17].x) / 3
+            py = (lm[0].y + lm[5].y + lm[17].y) / 3
+            // knuckle span as depth proxy
+            spread = Math.hypot(lm[5].x - lm[17].x, lm[5].y - lm[17].y) || 0.1
+            refSpread = 0.1
+          } else {
+            const res = (landmarker as FaceLandmarker).detectForVideo(video, now)
+            const lm = res.faceLandmarks?.[0]
+            if (!lm) {
+              setStatus('searching')
+              return
+            }
+            const rEye = lm[33]
+            const lEye = lm[263]
+            px = (rEye.x + lEye.x) / 2
+            py = (rEye.y + lEye.y) / 2
+            // inter-ocular distance as depth proxy
+            spread = Math.hypot(lEye.x - rEye.x, lEye.y - rEye.y) || 0.12
+            refSpread = 0.12
+          }
+
+          // webcam is mirrored: invert X so moving right -> view moves right
+          const x = (0.5 - px) * s.screenWidthM * 3.2 * s.strengthX
+          const y = (0.5 - py) * s.screenHeightM * 3.2 * s.strengthY
           const z = clamp(
-            s.viewerDistanceM * (0.12 / ipd),
+            s.viewerDistanceM * (refSpread / spread),
             s.viewerDistanceM * 0.4,
             s.viewerDistanceM * 2.2,
           )
@@ -123,7 +165,7 @@ export function useHeadTracking() {
         console.warn('[head-tracking] falling back to mouse:', err)
         setStatus('error')
         setMessage(
-          '웹캠/얼굴추적 사용 불가 — 마우스 모드로 자동 전환 (' +
+          '웹캠/추적 사용 불가 — 마우스 모드로 자동 전환 (' +
             (err instanceof Error ? err.message : String(err)) +
             ')',
         )
