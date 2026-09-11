@@ -107,8 +107,13 @@ export function useVisionViewpoint<L>(
         landmarker = await strategy.create(fileset)
         if (cancelled) return
 
+        // no width/height constraint: forcing a resize on some USB webcams
+        // makes the driver fall back to a raw YUY2 mode that Chrome/Windows
+        // decodes incorrectly (shows up as a green/corrupted preview) —
+        // landmark detection works on any frame size, so let the camera use
+        // whatever native mode it decodes correctly.
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, facingMode: 'user' },
+          video: { facingMode: 'user' },
         })
         if (cancelled) return
         video.srcObject = stream
