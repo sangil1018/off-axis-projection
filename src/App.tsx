@@ -1,13 +1,12 @@
-import { useHeadTracking } from './hooks/useHeadTracking'
 import { useScene } from './store/sceneStore'
 import { Studio } from './scene/Studio'
 import { Toolbar } from './editor/Toolbar'
 import { Outliner } from './editor/Outliner'
 import { Inspector } from './editor/Inspector'
 import { DropZone } from './editor/DropZone'
-import { TrackingOverlay } from './components/TrackingOverlay'
 import { CalibrationWizard } from './components/CalibrationWizard'
 import { useFittedSize } from './hooks/useFittedSize'
+import { useViewpoint, TrackerPreview } from './offaxis'
 
 function aspectRatioOf(mode: string, custom: number): number | null {
   switch (mode) {
@@ -25,18 +24,32 @@ function aspectRatioOf(mode: string, custom: number): number | null {
 }
 
 export default function App() {
-  const { head, status, message, videoRef } = useHeadTracking()
-  const aspectMode = useScene((s) => s.settings.aspectMode)
-  const customAspect = useScene((s) => s.settings.customAspect)
-  const headSource = useScene((s) => s.settings.headSource)
+  const settings = useScene((s) => s.settings)
+  const updateSettings = useScene((s) => s.updateSettings)
   const calibrating = useScene((s) => s.calibrating)
   const setCalibrating = useScene((s) => s.setCalibrating)
 
-  const ratio = aspectRatioOf(aspectMode, customAspect)
+  const ratio = aspectRatioOf(settings.aspectMode, settings.customAspect)
   const { ref, size } = useFittedSize(ratio)
 
+  const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
+    source: settings.headSource,
+    screen: {
+      widthM: settings.screenWidthM,
+      heightM: settings.screenHeightM,
+      distanceM: settings.viewerDistanceM,
+    },
+    tracking: {
+      strengthX: settings.strengthX,
+      strengthY: settings.strengthY,
+      strengthZ: settings.strengthZ,
+      smoothing: settings.smoothing,
+    },
+    onFallback: () => updateSettings({ headSource: 'mouse' }),
+  })
+
   if (import.meta.env.DEV) {
-    ;(window as unknown as { __head?: unknown }).__head = head
+    ;(window as unknown as { __head?: unknown }).__head = viewpoint
   }
 
   return (
@@ -50,13 +63,15 @@ export default function App() {
               className="relative overflow-hidden rounded"
               style={{ width: size.width, height: size.height }}
             >
-              {size.width > 0 && <Studio head={head} />}
-              {headSource !== 'mouse' && (
-                <TrackingOverlay
-                  source={headSource}
+              {size.width > 0 && <Studio eye={viewpoint} />}
+              {settings.headSource !== 'mouse' && (
+                <TrackerPreview
+                  source={settings.headSource}
                   status={status}
                   message={message}
-                  video={videoRef}
+                  videoRef={videoRef}
+                  visualRef={visualRef}
+                  onUsePointer={() => updateSettings({ headSource: 'mouse' })}
                 />
               )}
             </div>

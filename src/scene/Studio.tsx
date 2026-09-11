@@ -3,12 +3,10 @@ import * as THREE from 'three'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useScene } from '../store/sceneStore'
-import { HeadContext } from '../three/HeadContext'
-import { OffAxisCamera } from '../three/OffAxisCamera'
+import { OffAxisCamera, WindowFrame, type Viewpoint } from '../offaxis'
 import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
-import { SceneEnvironment, WindowFrame } from './Environment'
-import type { HeadRef } from '../hooks/useHeadTracking'
+import { SceneEnvironment } from './Environment'
 
 function DemoContent() {
   const objects = useScene((s) => s.objects)
@@ -31,7 +29,7 @@ function DemoContent() {
   )
 }
 
-export function Studio({ head }: { head: React.MutableRefObject<HeadRef> }) {
+export function Studio({ eye }: { eye: React.MutableRefObject<Viewpoint> }) {
   const settings = useScene((s) => s.settings)
   const select = useScene((s) => s.select)
 
@@ -39,6 +37,12 @@ export function Studio({ head }: { head: React.MutableRefObject<HeadRef> }) {
     () => [1, Math.max(0.5, 2 * settings.resolutionScale)],
     [settings.resolutionScale],
   )
+
+  const screen = {
+    widthM: settings.screenWidthM,
+    heightM: settings.screenHeightM,
+    distanceM: settings.viewerDistanceM,
+  }
 
   return (
     <Canvas
@@ -52,19 +56,25 @@ export function Studio({ head }: { head: React.MutableRefObject<HeadRef> }) {
       <color attach="background" args={[settings.background]} />
       <ExposureSync exposure={settings.exposure} />
       {import.meta.env.DEV && <DebugBridge />}
-      <HeadContext.Provider value={head}>
-        {!settings.editMode && <OffAxisCamera />}
-        {settings.editMode && (
-          <OrbitControls makeDefault target={[0, 0, -0.3]} />
-        )}
-        <Lights />
-        <Suspense fallback={null}>
-          <SceneEnvironment />
-        </Suspense>
-        <WindowFrame />
-        <SceneObjects />
-        <DemoContent />
-      </HeadContext.Provider>
+
+      <OffAxisCamera
+        eye={eye}
+        screen={screen}
+        near={settings.near}
+        far={settings.far}
+        enabled={!settings.editMode}
+      />
+      {settings.editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
+
+      <Lights />
+      <Suspense fallback={null}>
+        <SceneEnvironment />
+      </Suspense>
+      {settings.showFrame && (
+        <WindowFrame widthM={settings.screenWidthM} heightM={settings.screenHeightM} />
+      )}
+      <SceneObjects />
+      <DemoContent />
     </Canvas>
   )
 }

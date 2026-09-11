@@ -8,8 +8,36 @@
 - **Off-axis 프로젝션**: 물리 스크린 크기를 기준으로 한 generalized perspective
   projection (Kooima 2008). 머리를 움직이면 화면이 "창문 너머 공간"처럼 보임.
 - **시점 트래킹**: MediaPipe로 **얼굴 / 손** 중 선택(웹캠), 또는 **마우스**.
-  얼굴은 양안, 손은 손바닥 중심 + 손가락 관절 폭을 깊이(z) 추정에 사용.
+  얼굴은 양안 중점 + 양안 간 거리(깊이), 손은 손바닥 중심 + **엄지·검지 끝 간격**(깊이,
+  모을수록 가까이). 손은 21개 랜드마크 전체를 검출해 프리뷰에 스켈레톤을 그림.
   웹캠 불가 시 마우스로 자동 전환.
+
+### 재사용 가능한 `src/offaxis/` 모듈
+
+off-axis 렌더링·트래킹은 **스토어 의존성이 전혀 없는** 독립 모듈로 분리돼 있어
+다른 R3F 프로젝트에 그대로 붙여 쓸 수 있습니다.
+
+```tsx
+import { useViewpoint, OffAxisCamera, WindowFrame, TrackerPreview } from './offaxis'
+
+const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
+  source,                                   // 'face' | 'hand' | 'mouse'
+  screen: { widthM, heightM, distanceM },
+  tracking: { strengthX, strengthY, strengthZ, smoothing },
+  onFallback: () => setSource('mouse'),
+})
+
+// 캔버스 밖
+<TrackerPreview {...{ source, status, message, videoRef, visualRef }} />
+
+// <Canvas camera={{ position:[0,0,distanceM] }}> 안
+<OffAxisCamera eye={viewpoint} screen={screen} enabled={!editMode} />
+<WindowFrame widthM={widthM} heightM={heightM} />
+```
+
+- `useFaceViewpoint` / `useHandViewpoint` / `usePointerViewpoint` — 개별 훅으로도 사용 가능
+- `computeOffAxis()` — 순수 함수 (Kooima projection matrix)
+- `ViewpointSmoother` — EMA 스무더
 - **glTF / GLB**: 창에 드래그드롭, 또는 툴바에서 라이브러리 모델 / URL 로 추가.
   로드 시 자동으로 크기·위치가 보정됨(auto-fit). TransformControls 기즈모(T/R/S)로
   이동·회전·스케일, Inspector에서 수치 편집. **DRACO · Meshopt · KTX2** 압축 GLB 지원

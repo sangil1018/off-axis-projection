@@ -1,5 +1,5 @@
-/** Exponential moving-average smoother for a 3D head position (meters). */
-export class HeadSmoother {
+/** Exponential moving-average smoother for a 3D viewpoint position (metres). */
+export class ViewpointSmoother {
   x = 0
   y = 0
   z = 0.6
