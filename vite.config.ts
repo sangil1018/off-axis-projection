@@ -42,4 +42,32 @@ function cspMetaPlugin(): Plugin {
 export default defineConfig({
   plugins: [react(), cspMetaPlugin()],
   server: { host: true },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split heavy, slow-changing libraries into their own cacheable
+        // chunks instead of one monolithic bundle — a code change no longer
+        // invalidates the vendor download, and the browser can fetch these
+        // in parallel.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          // check the narrower/more specific packages before the ones whose
+          // names are substrings of others (@react-three/* contains "three")
+          if (id.includes('@react-three')) return 'vendor-r3f'
+          if (id.includes('@mediapipe')) return 'vendor-mediapipe'
+          if (/node_modules[\\/](three|three-stdlib|three-mesh-bvh)[\\/]/.test(id)) {
+            return 'vendor-three'
+          }
+          if (id.includes('react-dom') || id.includes('scheduler') || /node_modules[\\/]react[\\/]/.test(id)) {
+            return 'vendor-react'
+          }
+          return 'vendor'
+        },
+      },
+    },
+    // three.js alone is legitimately ~900kB minified; the warning is only
+    // useful for catching accidental bloat, which the split above already
+    // prevents — raise the bar past three's own isolated chunk
+    chunkSizeWarningLimit: 950,
+  },
 })
