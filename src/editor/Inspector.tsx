@@ -4,6 +4,7 @@ import type { MicStatus } from '../audio'
 import {
   ColorField,
   NumberField,
+  NumberSlider,
   Row,
   Section,
   Select,
@@ -223,20 +224,27 @@ function InspectorBody({
 
       <Section title="Off-Axis Camera">
         <Row label="Screen W (m)">
-          <NumberField value={settings.screenWidthM} step={0.01} min={0.05} onChange={(v) => set({ screenWidthM: v })} />
+          <NumberSlider min={0.05} max={3} step={0.01} value={settings.screenWidthM} onChange={(v) => set({ screenWidthM: v })} />
         </Row>
         <Row label="Screen H (m)">
-          <NumberField value={settings.screenHeightM} step={0.01} min={0.03} onChange={(v) => set({ screenHeightM: v })} />
+          <NumberSlider min={0.03} max={2} step={0.01} value={settings.screenHeightM} onChange={(v) => set({ screenHeightM: v })} />
         </Row>
         <Row label="Distance (m)">
-          <Slider min={0.2} max={2} value={settings.viewerDistanceM} onChange={(v) => set({ viewerDistanceM: v })} />
+          <NumberSlider min={0.1} max={3} step={0.01} value={settings.viewerDistanceM} onChange={(v) => set({ viewerDistanceM: v })} />
+        </Row>
+        <Row label="Edit FOV (°)">
+          <NumberSlider min={10} max={120} step={0.5} decimals={1} value={settings.fovDeg} onChange={(v) => set({ fovDeg: v })} />
         </Row>
         <Row label="Near">
-          <NumberField value={settings.near} step={0.01} min={0.01} onChange={(v) => set({ near: v })} />
+          <NumberSlider min={0.01} max={2} step={0.01} value={settings.near} onChange={(v) => set({ near: v })} />
         </Row>
         <Row label="Far">
-          <NumberField value={settings.far} step={1} min={1} onChange={(v) => set({ far: v })} />
+          <NumberSlider min={1} max={300} step={1} decimals={0} value={settings.far} onChange={(v) => set({ far: v })} />
         </Row>
+        <div className="pt-1 text-[10px] leading-tight text-slate-500">
+          Edit FOV은 Edit 모드(오빗 카메라) 화각만 조절합니다 — Preview의 off-axis
+          원근은 화면 크기·거리로 계산되어 영향받지 않습니다.
+        </div>
       </Section>
 
       <Section title="Viewpoint Tracking">

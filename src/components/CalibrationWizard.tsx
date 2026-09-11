@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useScene } from '../store/sceneStore'
+import { deriveFovDeg } from '../store/settingsSlice'
 
 const ASPECTS: Record<string, number> = {
   '16:9': 16 / 9,
@@ -34,10 +35,14 @@ export function CalibrationWizard({ onClose }: { onClose: () => void }) {
   }
 
   const apply = () => {
+    const viewerDistanceM = +(distCm / 100).toFixed(3)
+    const screenHeightM = +h.toFixed(4)
     set({
       screenWidthM: +w.toFixed(4),
-      screenHeightM: +h.toFixed(4),
-      viewerDistanceM: +(distCm / 100).toFixed(3),
+      screenHeightM,
+      viewerDistanceM,
+      // keep the Edit-mode camera framed like this new physical setup
+      fovDeg: +deriveFovDeg(screenHeightM, viewerDistanceM).toFixed(2),
     })
     onClose()
   }

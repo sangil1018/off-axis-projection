@@ -2,13 +2,25 @@ import type { StateCreator } from 'zustand'
 import type { Settings } from './types'
 import type { SceneState } from './sceneStore'
 
+/** Vertical FOV (degrees) that frames a screen of this height at this eye
+ * distance — the value the physical off-axis frustum works out to for a
+ * centred eye, used as the Edit-mode orbit camera's starting point so
+ * switching Preview↔Edit doesn't jump-zoom. */
+export function deriveFovDeg(screenHeightM: number, viewerDistanceM: number): number {
+  return (2 * Math.atan(screenHeightM / 2 / Math.max(viewerDistanceM, 0.01)) * 180) / Math.PI
+}
+
+const DEFAULT_SCREEN_HEIGHT_M = 0.34
+const DEFAULT_VIEWER_DISTANCE_M = 0.6
+
 export const DEFAULT_SETTINGS: Settings = {
   resolutionScale: 1,
   aspectMode: '16:9',
   customAspect: 16 / 9,
   screenWidthM: 0.6,
-  screenHeightM: 0.34,
-  viewerDistanceM: 0.6,
+  screenHeightM: DEFAULT_SCREEN_HEIGHT_M,
+  viewerDistanceM: DEFAULT_VIEWER_DISTANCE_M,
+  fovDeg: deriveFovDeg(DEFAULT_SCREEN_HEIGHT_M, DEFAULT_VIEWER_DISTANCE_M),
   near: 0.05,
   far: 100,
   headSource: 'face',

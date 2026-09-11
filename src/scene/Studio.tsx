@@ -47,6 +47,7 @@ export function Studio({
     screenWidthM,
     screenHeightM,
     viewerDistanceM,
+    fovDeg,
     shadows,
     near,
     far,
@@ -62,6 +63,7 @@ export function Studio({
       screenWidthM: s.settings.screenWidthM,
       screenHeightM: s.settings.screenHeightM,
       viewerDistanceM: s.settings.viewerDistanceM,
+      fovDeg: s.settings.fovDeg,
       shadows: s.settings.shadows,
       near: s.settings.near,
       far: s.settings.far,
@@ -84,21 +86,12 @@ export function Studio({
 
   const screen = { widthM: screenWidthM, heightM: screenHeightM, distanceM: viewerDistanceM }
 
-  // The off-axis camera's effective vertical FOV at a centred eye — giving the
-  // Canvas's own default (symmetric) camera the same FOV keeps Edit mode's
-  // OrbitControls view framed like Preview instead of a much wider/narrower
-  // default-fov jump when toggling between the two.
-  const fov = useMemo(
-    () => THREE.MathUtils.radToDeg(2 * Math.atan(screenHeightM / 2 / viewerDistanceM)),
-    [screenHeightM, viewerDistanceM],
-  )
-
   return (
     <Canvas
       shadows={shadows}
       dpr={dpr}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
-      camera={{ position: [0, 0, viewerDistanceM], near, far, fov }}
+      camera={{ position: [0, 0, viewerDistanceM], near, far, fov: fovDeg }}
       onPointerMissed={() => select(null)}
       style={{ background }}
     >

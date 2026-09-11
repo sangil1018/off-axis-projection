@@ -1,12 +1,16 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 
 /**
  * Watches an element and returns the largest width/height with the given
  * aspect ratio (w/h) that fits inside it — i.e. letterboxed both directions.
  * Pass ratio = null to just fill the container.
  */
-export function useFittedSize(ratio: number | null) {
-  const ref = useRef<HTMLDivElement>(null)
+export function useFittedSize(
+  ratio: number | null,
+  externalRef?: RefObject<HTMLDivElement>,
+) {
+  const ownRef = useRef<HTMLDivElement>(null)
+  const ref = externalRef ?? ownRef
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: 0,
     height: 0,
@@ -34,7 +38,7 @@ export function useFittedSize(ratio: number | null) {
     const ro = new ResizeObserver(compute)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [ratio])
+  }, [ratio, ref])
 
   return { ref, size }
 }

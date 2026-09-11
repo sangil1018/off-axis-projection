@@ -67,6 +67,50 @@ export function Slider({
   )
 }
 
+/** A precise numeric field paired with a drag slider for the same value. */
+export function NumberSlider({
+  value,
+  onChange,
+  min,
+  max,
+  step = 0.01,
+  decimals = 2,
+}: {
+  value: number
+  onChange: (v: number) => void
+  min: number
+  max: number
+  step?: number
+  decimals?: number
+}) {
+  const clamp = (n: number) => Math.min(max, Math.max(min, n))
+  return (
+    <span className="flex flex-1 items-center gap-2">
+      <input
+        type="range"
+        className="flex-1 accent-sky-500"
+        value={Number.isFinite(value) ? value : min}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+      />
+      <input
+        type="number"
+        className="w-16 shrink-0 rounded bg-slate-800 px-1.5 py-1 text-right text-xs outline-none focus:ring-1 focus:ring-sky-500"
+        value={Number.isFinite(value) ? +value.toFixed(decimals) : 0}
+        min={min}
+        max={max}
+        step={step}
+        onChange={(e) => {
+          const n = parseFloat(e.target.value)
+          if (Number.isFinite(n)) onChange(clamp(n))
+        }}
+      />
+    </span>
+  )
+}
+
 export function Vec3Field({
   value,
   onChange,

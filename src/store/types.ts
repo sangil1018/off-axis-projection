@@ -62,7 +62,10 @@ export type Settings = {
   screenWidthM: number
   screenHeightM: number
   viewerDistanceM: number
-  // camera
+  // camera (fovDeg only drives the Edit-mode orbit camera — Preview's
+  // off-axis frustum is derived straight from the physical screen/eye
+  // geometry and never reads it)
+  fovDeg: number
   near: number
   far: number
   // viewpoint tracking

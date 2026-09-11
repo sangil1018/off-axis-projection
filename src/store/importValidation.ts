@@ -116,6 +116,7 @@ export function sanitizeSettings(raw: unknown, defaults: Settings): Settings {
     screenWidthM: num(r.screenWidthM, 0.05, 5, defaults.screenWidthM),
     screenHeightM: num(r.screenHeightM, 0.03, 5, defaults.screenHeightM),
     viewerDistanceM: num(r.viewerDistanceM, 0.1, 5, defaults.viewerDistanceM),
+    fovDeg: num(r.fovDeg, 10, 120, defaults.fovDeg),
     near: num(r.near, 0.001, 1, defaults.near),
     far: num(r.far, 1, 10000, defaults.far),
     // never auto-trigger a camera prompt from a file — land on mouse, same as mic

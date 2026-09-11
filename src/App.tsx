@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useScene } from './store/sceneStore'
 import { Studio } from './scene/Studio'
@@ -8,6 +9,7 @@ import { DropZone } from './editor/DropZone'
 import { CalibrationWizard } from './components/CalibrationWizard'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useFittedSize } from './hooks/useFittedSize'
+import { useFullscreen } from './hooks/useFullscreen'
 import { useMicLevel } from './audio'
 import { useViewpoint, TrackerPreview } from './offaxis'
 import { EDITOR_ENABLED } from './config'
@@ -67,8 +69,12 @@ export default function App() {
   // the edit-mode orbit view only exists in the editor build
   const editModeActive = EDITOR_ENABLED && editMode
 
-  const ratio = aspectRatioOf(aspectMode, customAspect)
-  const { ref, size } = useFittedSize(ratio)
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(viewportRef)
+  // fullscreen means "fill the display" — the configured aspect ratio only
+  // makes sense as a letterbox inside a windowed layout
+  const ratio = isFullscreen ? null : aspectRatioOf(aspectMode, customAspect)
+  const { ref, size } = useFittedSize(ratio, viewportRef)
 
   // while editing, the mouse drives OrbitControls (pan/orbit/zoom) instead of
   // the off-axis viewpoint — so face/hand/mouse tracking is fully paused
@@ -117,6 +123,22 @@ export default function App() {
             onUsePointer={() => updateSettings({ headSource: 'mouse' })}
           />
         )}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? '전체화면 종료' : '전체화면'}
+          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded bg-black/40 text-slate-200 opacity-60 backdrop-blur transition hover:opacity-100"
+        >
+          {isFullscreen ? (
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M9 3v4a2 2 0 0 1-2 2H3M21 9h-4a2 2 0 0 1-2-2V3M3 15h4a2 2 0 0 1 2 2v4M15 21v-4a2 2 0 0 1 2-2h4" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 1-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4" />
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   )

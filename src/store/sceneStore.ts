@@ -102,6 +102,19 @@ export const useScene = create<SceneState>()(
     }),
     {
       name: 'off-axis-projection-studio',
+      // zustand's default merge is a shallow `{...current, ...persisted}` —
+      // that would let an older saved `settings` blob (missing a newer field
+      // such as fovDeg) wholesale replace DEFAULT_SETTINGS and silently drop
+      // it. Merge `settings` one level deeper so new fields keep their
+      // default until the user actually changes them.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<SceneState>
+        return {
+          ...current,
+          ...p,
+          settings: { ...current.settings, ...p.settings },
+        }
+      },
       partialize: (s) => ({
         // don't persist blob URLs (they die on reload); keep the metadata
         objects: s.objects.map((o) => (o.isBlob ? { ...o, url: '' } : o)),
