@@ -6,10 +6,10 @@ import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import { useScene, type SceneObject } from '../store/sceneStore'
 import { useMicShake } from '../audio'
 import { EDITOR_ENABLED } from '../config'
+import { useLocalBounds, type Bounds } from '../hooks/useLocalBounds'
 
 const DRACO_PATH = 'decoders/draco/'
 const BASIS_PATH = 'decoders/basis/'
-type Bounds = { size: [number, number, number]; center: [number, number, number] }
 
 /** Wireframe box around a model — bold cyan for selection, faint for hover. */
 function HighlightBox({ bounds, kind }: { bounds: Bounds; kind: 'select' | 'hover' }) {
@@ -65,8 +65,6 @@ function Model({
     setObjectError(obj.id, false)
   }, [obj.id, obj.url, setObjectError])
 
-  const [bounds, setBounds] = useState<Bounds | null>(null)
-
   useEffect(() => {
     cloned.traverse((o) => {
       if ((o as THREE.Mesh).isMesh) {
@@ -76,29 +74,18 @@ function Model({
     })
   }, [cloned, obj.castShadow, obj.receiveShadow])
 
-  // local bounding box (for the selection wireframe) — recompute after fit.
-  // Measured on a throwaway, unattached clone rather than `cloned` itself:
-  // once `cloned` is inserted into the live scene, Box3.setFromObject reads
-  // its *current* parent-chain matrixWorld, which can still reflect a stale
-  // (pre-fit or pre-render) ancestor transform the first time this re-runs —
-  // silently shrinking/offsetting the box relative to what's actually drawn.
-  // A parent-less clone has no ancestor to contaminate it.
-  useEffect(() => {
-    const box = new THREE.Box3().setFromObject(cloned.clone(true))
-    const size = new THREE.Vector3()
-    const center = new THREE.Vector3()
-    box.getSize(size)
-    box.getCenter(center)
-    setBounds({ size: size.toArray(), center: center.toArray() })
+  // local bounding box — feeds both the selection wireframe and the one-time
+  // auto-fit scale/position below
+  const bounds = useLocalBounds(cloned)
 
-    if (!obj.fitted) {
-      const maxDim = Math.max(size.x, size.y, size.z) || 1
-      const s = 0.28 / maxDim
-      const baseY = -0.14
-      onFit(s, baseY - (center.y - size.y / 2) * s)
-    }
+  useEffect(() => {
+    if (!bounds || obj.fitted) return
+    const maxDim = Math.max(...bounds.size) || 1
+    const s = 0.28 / maxDim
+    const baseY = -0.14
+    onFit(s, baseY - (bounds.center[1] - bounds.size[1] / 2) * s)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cloned, obj.fitted])
+  }, [bounds, obj.fitted])
 
   return (
     <>
