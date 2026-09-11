@@ -1,5 +1,9 @@
-import { Grid, Environment as DreiEnvironment, Lightformer } from '@react-three/drei'
+import { Grid, Environment as DreiEnvironment, Lightformer, Line } from '@react-three/drei'
 import { useScene } from '../store/sceneStore'
+
+const GRID_Y = -0.25
+const GRID_Z = -0.3
+const GRID_HALF_EXTENT = 5 // metres — matches Blender's default viewport grid scale
 
 /**
  * Fully procedural image-based lighting — no external HDR download, works offline.
@@ -17,6 +21,31 @@ function ProceduralIBL() {
   )
 }
 
+/** Blender-style colored origin lines: red along X, green along the depth axis. */
+function GridAxes() {
+  const y = GRID_Y + 0.0005 // nudge above the grid plane to avoid z-fighting
+  return (
+    <>
+      <Line
+        points={[
+          [-GRID_HALF_EXTENT, y, GRID_Z],
+          [GRID_HALF_EXTENT, y, GRID_Z],
+        ]}
+        color="#a35454"
+        lineWidth={1.5}
+      />
+      <Line
+        points={[
+          [0, y, GRID_Z - GRID_HALF_EXTENT],
+          [0, y, GRID_Z + GRID_HALF_EXTENT],
+        ]}
+        color="#5a9c62"
+        lineWidth={1.5}
+      />
+    </>
+  )
+}
+
 export function SceneEnvironment() {
   const showGrid = useScene((s) => s.settings.showGrid)
   const environment = useScene((s) => s.settings.environment)
@@ -26,22 +55,27 @@ export function SceneEnvironment() {
       {environment && <ProceduralIBL />}
       <hemisphereLight args={['#cfe0ff', '#2b2f3a', environment ? 0.15 : 0.6]} />
       {showGrid && (
-        <Grid
-          position={[0, -0.25, -0.3]}
-          args={[10, 10]}
-          cellSize={0.1}
-          cellThickness={0.6}
-          sectionSize={0.5}
-          sectionThickness={1}
-          sectionColor="#3b82f6"
-          cellColor="#334155"
-          fadeDistance={6}
-          infiniteGrid
-        />
+        <>
+          {/* Blender defaults: 1m cells (10 subdivisions of 0.1m each) */}
+          <Grid
+            position={[0, GRID_Y, GRID_Z]}
+            args={[GRID_HALF_EXTENT * 2, GRID_HALF_EXTENT * 2]}
+            cellSize={0.1}
+            cellThickness={0.5}
+            sectionSize={1}
+            sectionThickness={1.25}
+            sectionColor="#6b6b6b"
+            cellColor="#3d3d3d"
+            fadeDistance={GRID_HALF_EXTENT * 2}
+            fadeStrength={1}
+            infiniteGrid
+          />
+          <GridAxes />
+        </>
       )}
       {shadows && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.25, -0.3]} receiveShadow>
-          <planeGeometry args={[10, 10]} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, GRID_Y, GRID_Z]} receiveShadow>
+          <planeGeometry args={[GRID_HALF_EXTENT * 2, GRID_HALF_EXTENT * 2]} />
           <shadowMaterial opacity={0.35} />
         </mesh>
       )}
