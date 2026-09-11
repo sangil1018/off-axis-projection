@@ -4,7 +4,14 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useShallow } from 'zustand/react/shallow'
 import { useScene } from '../store/sceneStore'
-import { OffAxisCamera, WindowFrame, RoomGrid, type Viewpoint } from '../offaxis'
+import {
+  OffAxisCamera,
+  WindowFrame,
+  RoomGrid,
+  WindowClip,
+  useFittedScreenWidthM,
+  type Viewpoint,
+} from '../offaxis'
 import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
@@ -118,10 +125,13 @@ export function Studio({
         <Suspense fallback={null}>
           <SceneEnvironment />
         </Suspense>
-        {showFrame && <WindowFrame widthM={screenWidthM} heightM={screenHeightM} />}
-        {showRoomGrid && (
-          <RoomGrid widthM={screenWidthM} heightM={screenHeightM} depthM={roomDepthM} />
-        )}
+        <FittedWindow
+          heightM={screenHeightM}
+          depthM={roomDepthM}
+          showFrame={showFrame}
+          showRoomGrid={showRoomGrid}
+        />
+        <WindowClip heightM={screenHeightM} enabled={!editMode} />
         <SceneObjects />
         <DemoContent />
       </MicContext.Provider>
@@ -166,6 +176,33 @@ function EditCameraReset({
     wasActive.current = active
   }, [active, camera, distanceM, fovDeg, near, far])
   return null
+}
+
+/**
+ * Renders the window frame outline / room grid at the same aspect-fitted
+ * width OffAxisCamera derives its frustum from (see fitScreenWidthM) —
+ * otherwise they'd draw the calibrated screenWidthM while the actual view is
+ * wider or narrower, leaving the frame floating away from the true edge of
+ * what's visible instead of tracing it.
+ */
+function FittedWindow({
+  heightM,
+  depthM,
+  showFrame,
+  showRoomGrid,
+}: {
+  heightM: number
+  depthM: number
+  showFrame: boolean
+  showRoomGrid: boolean
+}) {
+  const widthM = useFittedScreenWidthM(heightM)
+  return (
+    <>
+      {showFrame && <WindowFrame widthM={widthM} heightM={heightM} />}
+      {showRoomGrid && <RoomGrid widthM={widthM} heightM={heightM} depthM={depthM} />}
+    </>
+  )
 }
 
 function DebugBridge() {
