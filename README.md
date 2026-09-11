@@ -1,5 +1,7 @@
 # Off-Axis Projection Studio
 
+[![CI](https://github.com/sangil1018/off-axis-projection/actions/workflows/ci.yml/badge.svg)](https://github.com/sangil1018/off-axis-projection/actions/workflows/ci.yml)
+
 `icurtis1/off-axis-sneaker`의 off-axis(비대칭 절두체) 프로젝션 효과를 재현하고,
 그 위에 씬 에디터를 얹은 프로젝트.
 
