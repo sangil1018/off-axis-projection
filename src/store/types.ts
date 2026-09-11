@@ -24,10 +24,12 @@ export type SceneObject = {
   shakeIntensity: number
 }
 
-export type LibraryModel = { name: string; url: string }
+export type LibraryModel = { name: string; url: string; rotation?: Vec3 }
 
 export const MODEL_LIBRARY: LibraryModel[] = [
-  { name: 'Duck', url: 'models/Duck.glb' },
+  // Duck.glb's own forward axis faces +X (screen-right) at rotation 0, which
+  // reads as a flat side profile — turn it to a mostly-frontal 3/4 view
+  { name: 'Duck', url: 'models/Duck.glb', rotation: [0, -1.1, 0] },
   { name: 'Box', url: 'models/Box.glb' },
 ]
 

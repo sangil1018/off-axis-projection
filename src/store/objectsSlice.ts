@@ -1,5 +1,6 @@
 import type { StateCreator } from 'zustand'
-import type { SceneObject } from './types'
+import type { LibraryModel, SceneObject } from './types'
+import { MODEL_LIBRARY } from './types'
 import { uid, releaseUrl } from './utils'
 import type { SceneState } from './sceneStore'
 
@@ -24,8 +25,15 @@ export function makeObject(
   }
 }
 
+const DUCK = MODEL_LIBRARY.find((m) => m.name === 'Duck')!
+
 export const DEFAULT_OBJECTS: SceneObject[] = [
-  makeObject({ url: 'models/Duck.glb', fileName: 'Duck.glb', isBlob: false }),
+  makeObject({
+    url: DUCK.url,
+    fileName: 'Duck.glb',
+    isBlob: false,
+    rotation: DUCK.rotation,
+  }),
 ]
 
 export type ObjectsSlice = {
@@ -34,7 +42,7 @@ export type ObjectsSlice = {
   objectErrors: Record<string, true>
 
   addObject: (o: Partial<SceneObject> & { url: string; fileName: string; isBlob: boolean }) => string
-  addLibraryModel: (m: { name: string; url: string }) => string
+  addLibraryModel: (m: LibraryModel) => string
   addFromUrl: (url: string) => string
   updateObject: (id: string, patch: Partial<SceneObject>) => void
   removeObject: (id: string) => void
@@ -53,7 +61,13 @@ export const createObjectsSlice: StateCreator<SceneState, [], [], ObjectsSlice> 
     return obj.id
   },
   addLibraryModel: (m) => {
-    const obj = makeObject({ url: m.url, fileName: m.name + '.glb', isBlob: false, name: m.name })
+    const obj = makeObject({
+      url: m.url,
+      fileName: m.name + '.glb',
+      isBlob: false,
+      name: m.name,
+      rotation: m.rotation,
+    })
     set((s) => ({ objects: [...s.objects, obj], selectedId: obj.id }))
     return obj.id
   },
