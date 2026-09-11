@@ -132,10 +132,14 @@ export function Toolbar() {
       <div className="ml-auto flex items-center gap-2">
         <button
           className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700"
-          onClick={() => window.open(window.location.href, '_blank', 'noopener,noreferrer')}
-          title="지금 화면을 새 브라우저 창/탭에서 그대로 열기 (실브라우저 확인용)"
+          onClick={() => {
+            const url = new URL(window.location.href)
+            url.searchParams.set('viewer', '1')
+            window.open(url.toString(), '_blank', 'noopener,noreferrer')
+          }}
+          title="에디터 UI 없이 카메라 트래킹 뷰어만 새 브라우저 창/탭에서 열기 (실브라우저 확인용)"
         >
-          🔗 새 창에서 열기
+          🔗 뷰어로 새 창에서 열기
         </button>
         <button className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700" onClick={() => setCalibrating(true)}>
           Calibrate
