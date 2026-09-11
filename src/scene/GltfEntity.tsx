@@ -76,9 +76,15 @@ function Model({
     })
   }, [cloned, obj.castShadow, obj.receiveShadow])
 
-  // local bounding box (for the selection wireframe) — recompute after fit
+  // local bounding box (for the selection wireframe) — recompute after fit.
+  // Measured on a throwaway, unattached clone rather than `cloned` itself:
+  // once `cloned` is inserted into the live scene, Box3.setFromObject reads
+  // its *current* parent-chain matrixWorld, which can still reflect a stale
+  // (pre-fit or pre-render) ancestor transform the first time this re-runs —
+  // silently shrinking/offsetting the box relative to what's actually drawn.
+  // A parent-less clone has no ancestor to contaminate it.
   useEffect(() => {
-    const box = new THREE.Box3().setFromObject(cloned)
+    const box = new THREE.Box3().setFromObject(cloned.clone(true))
     const size = new THREE.Vector3()
     const center = new THREE.Vector3()
     box.getSize(size)
