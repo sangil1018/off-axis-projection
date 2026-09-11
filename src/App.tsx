@@ -5,6 +5,7 @@ import { Outliner } from './editor/Outliner'
 import { Inspector } from './editor/Inspector'
 import { DropZone } from './editor/DropZone'
 import { CalibrationWizard } from './components/CalibrationWizard'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { useFittedSize } from './hooks/useFittedSize'
 import { useMicLevel } from './hooks/useMicLevel'
 import { useViewpoint, TrackerPreview } from './offaxis'
@@ -70,7 +71,24 @@ export default function App() {
               className="relative overflow-hidden rounded"
               style={{ width: size.width, height: size.height }}
             >
-              {size.width > 0 && <Studio eye={viewpoint} micLevel={micLevel} />}
+              {size.width > 0 && (
+                <ErrorBoundary
+                  fallback={(err, retry) => (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
+                      <p className="text-sm font-medium text-rose-300">3D 뷰 렌더 중 오류가 발생했습니다</p>
+                      <p className="max-w-sm text-xs text-slate-400">{err.message}</p>
+                      <button
+                        className="rounded bg-sky-600 px-3 py-1.5 text-xs font-medium"
+                        onClick={retry}
+                      >
+                        다시 시도
+                      </button>
+                    </div>
+                  )}
+                >
+                  <Studio eye={viewpoint} micLevel={micLevel} />
+                </ErrorBoundary>
+              )}
               {settings.headSource !== 'mouse' && (
                 <TrackerPreview
                   source={settings.headSource}

@@ -1,7 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useGLTF } from '@react-three/drei'
 
 export type Vec3 = [number, number, number]
+
+/** Release a dropped-file object URL and drop it from the GLTF cache. */
+function releaseUrl(url: string | undefined) {
+  if (!url || !url.startsWith('blob:')) return
+  try {
+    URL.revokeObjectURL(url)
+    useGLTF.clear(url)
+  } catch {
+    /* noop */
+  }
+}
 
 export type SceneObject = {
   id: string
@@ -101,6 +113,8 @@ type SceneState = {
   calibrating: boolean
   inspectorOpen: boolean
   inspectorOpacity: number
+  /** transient: ids of objects whose model failed to load (not persisted) */
+  objectErrors: Record<string, true>
 
   setCalibrating: (v: boolean) => void
   setInspectorOpen: (v: boolean) => void
@@ -108,6 +122,7 @@ type SceneState = {
   select: (id: string | null) => void
   setHovered: (id: string | null) => void
   setGizmoMode: (m: GizmoMode) => void
+  setObjectError: (id: string, failed: boolean) => void
 
   addObject: (o: Partial<SceneObject> & { url: string; fileName: string; isBlob: boolean }) => string
   addLibraryModel: (m: LibraryModel) => string
@@ -224,6 +239,7 @@ export const useScene = create<SceneState>()(
       calibrating: false,
       inspectorOpen: false,
       inspectorOpacity: 0.9,
+      objectErrors: {},
 
       setCalibrating: (calibrating) => set({ calibrating }),
       setInspectorOpen: (inspectorOpen) => set({ inspectorOpen }),
@@ -231,6 +247,13 @@ export const useScene = create<SceneState>()(
       select: (id) => set({ selectedId: id }),
       setHovered: (hoveredId) => set({ hoveredId }),
       setGizmoMode: (gizmoMode) => set({ gizmoMode }),
+      setObjectError: (id, failed) =>
+        set((s) => {
+          const next = { ...s.objectErrors }
+          if (failed) next[id] = true
+          else delete next[id]
+          return { objectErrors: next }
+        }),
 
       addObject: (o) => {
         const obj = makeObject(o)
@@ -253,10 +276,17 @@ export const useScene = create<SceneState>()(
           objects: s.objects.map((o) => (o.id === id ? { ...o, ...patch } : o)),
         })),
       removeObject: (id) =>
-        set((s) => ({
-          objects: s.objects.filter((o) => o.id !== id),
-          selectedId: s.selectedId === id ? null : s.selectedId,
-        })),
+        set((s) => {
+          const gone = s.objects.find((o) => o.id === id)
+          releaseUrl(gone?.url)
+          const objectErrors = { ...s.objectErrors }
+          delete objectErrors[id]
+          return {
+            objects: s.objects.filter((o) => o.id !== id),
+            selectedId: s.selectedId === id ? null : s.selectedId,
+            objectErrors,
+          }
+        }),
 
       addLight: (type) => {
         const l = defaultLight(type)
@@ -276,13 +306,16 @@ export const useScene = create<SceneState>()(
       updateSettings: (patch) =>
         set((s) => ({ settings: { ...s.settings, ...patch } })),
 
-      reset: () =>
+      reset: () => {
+        get().objects.forEach((o) => releaseUrl(o.url))
         set({
           objects: DEFAULT_OBJECTS,
           lights: DEFAULT_LIGHTS,
           settings: DEFAULT_SETTINGS,
           selectedId: null,
-        }),
+          objectErrors: {},
+        })
+      },
 
       exportScene: () => {
         const { objects, lights, settings } = get()
@@ -309,6 +342,7 @@ export const useScene = create<SceneState>()(
       importScene: (data) => {
         const d = data as Partial<SceneState> & { objects?: SceneObject[] }
         if (!d || typeof d !== 'object') return
+        get().objects.forEach((o) => releaseUrl(o.url))
         set({
           objects: (d.objects ?? []).map((o) => ({
             ...o,
@@ -321,16 +355,25 @@ export const useScene = create<SceneState>()(
           lights: (d.lights ?? DEFAULT_LIGHTS).map((l) => ({ ...l, id: uid() })),
           settings: { ...DEFAULT_SETTINGS, ...(d.settings ?? {}) },
           selectedId: null,
+          objectErrors: {},
         })
       },
 
       attachFile: (fileName, url) =>
         set((s) => ({
-          objects: s.objects.map((o) =>
-            o.fileName === fileName && (!o.url || o.isBlob)
-              ? { ...o, url, isBlob: true }
-              : o,
-          ),
+          objects: s.objects.map((o) => {
+            if (o.fileName !== fileName || (o.url && !o.isBlob)) return o
+            releaseUrl(o.url) // drop the previous blob before re-attaching
+            return { ...o, url, isBlob: true }
+          }),
+          objectErrors: (() => {
+            const next = { ...s.objectErrors }
+            const hit = s.objects.find(
+              (o) => o.fileName === fileName && (!o.url || o.isBlob),
+            )
+            if (hit) delete next[hit.id]
+            return next
+          })(),
         })),
     }),
     {

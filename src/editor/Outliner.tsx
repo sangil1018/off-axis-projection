@@ -3,6 +3,7 @@ import { useScene } from '../store/sceneStore'
 export function Outliner() {
   const objects = useScene((s) => s.objects)
   const lights = useScene((s) => s.lights)
+  const objectErrors = useScene((s) => s.objectErrors)
   const selectedId = useScene((s) => s.selectedId)
   const select = useScene((s) => s.select)
   const removeObject = useScene((s) => s.removeObject)
@@ -22,7 +23,15 @@ export function Outliner() {
         {objects.map((o) => (
           <Item
             key={o.id}
-            name={o.name + (o.url ? '' : ' (파일 없음)')}
+            name={
+              o.name +
+              (objectErrors[o.id]
+                ? ' (불러오기 실패)'
+                : o.url
+                  ? ''
+                  : ' (파일 없음)')
+            }
+            error={!!objectErrors[o.id]}
             active={selectedId === o.id}
             visible={o.visible}
             onSelect={() => select(o.id)}
@@ -55,6 +64,7 @@ function Item({
   name,
   active,
   visible,
+  error,
   onSelect,
   onToggle,
   onRemove,
@@ -62,6 +72,7 @@ function Item({
   name: string
   active: boolean
   visible: boolean
+  error?: boolean
   onSelect: () => void
   onToggle: () => void
   onRemove: () => void
@@ -79,7 +90,10 @@ function Item({
       >
         {visible ? '●' : '○'}
       </button>
-      <button className="flex-1 truncate text-left" onClick={onSelect}>
+      <button
+        className={`flex-1 truncate text-left ${error ? 'text-rose-400' : ''}`}
+        onClick={onSelect}
+      >
         {name}
       </button>
       <button

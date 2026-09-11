@@ -61,6 +61,12 @@ function Model({
   const { scene } = useGLTF(obj.url, DRACO_PATH, true, extendLoader as never)
   const cloned = useMemo(() => scene.clone(true), [scene])
 
+  // reaching here means the model loaded — clear any prior error flag
+  const setObjectError = useScene((s) => s.setObjectError)
+  useEffect(() => {
+    setObjectError(obj.id, false)
+  }, [obj.id, obj.url, setObjectError])
+
   const [bounds, setBounds] = useState<Bounds | null>(null)
 
   useEffect(() => {
