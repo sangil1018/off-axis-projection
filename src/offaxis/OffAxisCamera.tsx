@@ -31,6 +31,7 @@ export function OffAxisCamera({
   enabled = true,
 }: OffAxisCameraProps) {
   const camera = useThree((s) => s.camera)
+  const size = useThree((s) => s.size)
   const result = useMemo(makeResult, [])
   const pa = useMemo(() => new THREE.Vector3(), [])
   const pb = useMemo(() => new THREE.Vector3(), [])
@@ -39,8 +40,18 @@ export function OffAxisCamera({
 
   useFrame(() => {
     if (!enabled) return
-    const w = screen.widthM
+    // the virtual window's height stays locked to the calibrated physical
+    // screen (that's what fixes the vertical FOV); its width follows
+    // whatever aspect the canvas actually renders at instead of the
+    // calibrated screenWidthM. If the two disagree — a letterbox aspect
+    // mode, or fullscreen filling a differently-shaped monitor — the GPU
+    // maps this frustum onto that viewport 1:1, so keeping width tied to
+    // screenWidthM would stretch every object non-uniformly to fill it.
+    // Widening/narrowing the window instead of warping its contents is
+    // also the physically correct behaviour: a wider window shows more of
+    // the room at the sides, it doesn't zoom.
     const h = screen.heightM
+    const w = h * (size.width / size.height)
     pa.set(-w / 2, -h / 2, 0)
     pb.set(w / 2, -h / 2, 0)
     pc.set(-w / 2, h / 2, 0)
