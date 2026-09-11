@@ -105,6 +105,17 @@ export function useVisionViewpoint<L>(
       try {
         setStatus('loading')
         setMessage(strategy.loadingMessage)
+        // getUserMedia only exists in a secure context (HTTPS, or localhost/
+        // 127.0.0.1) — opening the dev server's network URL (http://192.168.
+        // x.x:5173) from another device is plain HTTP, so the browser hides
+        // the API entirely instead of prompting. Fail fast with a message
+        // that explains why, rather than a confusing "getUserMedia is not a
+        // function" a moment later.
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+          throw new Error(
+            '카메라는 HTTPS 또는 localhost에서만 사용할 수 있습니다 — 다른 기기에서 http://(IP)로 접속하면 브라우저가 카메라 접근을 차단합니다. HTTPS로 접속하거나(예: vite --host --https, mkcert 인증서), 이 기기에서 localhost로 접속해 주세요.',
+          )
+        }
         const fileset = await FilesetResolver.forVisionTasks(WASM_CDN)
         landmarker = await strategy.create(fileset)
         if (cancelled) return
