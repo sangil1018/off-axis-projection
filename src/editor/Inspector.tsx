@@ -136,6 +136,14 @@ export function Inspector() {
         <Row label="Window frame">
           <Toggle value={settings.showFrame} onChange={(v) => set({ showFrame: v })} />
         </Row>
+        <Row label="Room grid (dev)">
+          <Toggle value={settings.showRoomGrid} onChange={(v) => set({ showRoomGrid: v })} />
+        </Row>
+        {settings.showRoomGrid && (
+          <Row label="Room depth">
+            <Slider min={0.3} max={3} value={settings.roomDepthM} onChange={(v) => set({ roomDepthM: v })} />
+          </Row>
+        )}
       </Section>
 
       <Section title="Off-Axis Camera">

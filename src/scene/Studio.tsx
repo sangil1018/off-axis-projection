@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { useScene } from '../store/sceneStore'
-import { OffAxisCamera, WindowFrame, type Viewpoint } from '../offaxis'
+import { OffAxisCamera, WindowFrame, RoomGrid, type Viewpoint } from '../offaxis'
 import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
@@ -72,6 +72,13 @@ export function Studio({ eye }: { eye: React.MutableRefObject<Viewpoint> }) {
       </Suspense>
       {settings.showFrame && (
         <WindowFrame widthM={settings.screenWidthM} heightM={settings.screenHeightM} />
+      )}
+      {settings.showRoomGrid && (
+        <RoomGrid
+          widthM={settings.screenWidthM}
+          heightM={settings.screenHeightM}
+          depthM={settings.roomDepthM}
+        />
       )}
       <SceneObjects />
       <DemoContent />

@@ -33,6 +33,7 @@ const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
 // <Canvas camera={{ position:[0,0,distanceM] }}> 안
 <OffAxisCamera eye={viewpoint} screen={screen} enabled={!editMode} />
 <WindowFrame widthM={widthM} heightM={heightM} />
+<RoomGrid widthM={widthM} heightM={heightM} depthM={1.2} />  {/* 개발용 반투명 룸 그리드 */}
 ```
 
 - `useFaceViewpoint` / `useHandViewpoint` / `usePointerViewpoint` — 개별 훅으로도 사용 가능
@@ -48,6 +49,9 @@ const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
   스팟 각도/penumbra 등 제어. 선택 시 헬퍼 표시.
 - **해상도 / 비율**: resolution scale(0.25–2), aspect(fill·16:9·4:3·1:1·custom),
   exposure, 배경색, IBL, 그림자, 그리드, 윈도우 프레임 토글.
+- **뷰 공간 룸 그리드**: 화면 평면을 앞면으로 하는 반투명 그리드 박스(바닥·천장·좌우·
+  뒷벽). 시점이 움직이면 원근이 함께 변형됨. 개발 빌드 기본 ON / 프로덕션 기본 OFF,
+  Inspector `Room grid (dev)` 토글 + 깊이 슬라이더.
 - **환경광(IBL)**: Lightformer 기반 절차적 스튜디오 환경맵 — 외부 HDR 다운로드 없이
   오프라인에서 동작.
 - **저장**: localStorage 자동 저장 + JSON export / import. (드롭한 GLB는 blob이라

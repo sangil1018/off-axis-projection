@@ -69,6 +69,9 @@ export type Settings = {
   // scene look
   showFrame: boolean
   showGrid: boolean
+  /** translucent deforming "room" grid — dev aid by default */
+  showRoomGrid: boolean
+  roomDepthM: number
   background: string
   environment: boolean
   exposure: number
@@ -127,6 +130,8 @@ export const DEFAULT_SETTINGS: Settings = {
   smoothing: 0.35,
   showFrame: true,
   showGrid: true,
+  showRoomGrid: import.meta.env.DEV,
+  roomDepthM: 1.2,
   background: '#0d1017',
   environment: true,
   exposure: 1,
