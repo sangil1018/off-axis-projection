@@ -21,10 +21,17 @@ export function Toolbar() {
     const f = e.target.files?.[0]
     if (!f) return
     f.text().then((t) => {
+      let parsed: unknown
       try {
-        importScene(JSON.parse(t))
+        parsed = JSON.parse(t)
       } catch {
         alert('JSON 파싱 실패')
+        return
+      }
+      try {
+        importScene(parsed)
+      } catch (err) {
+        alert(err instanceof Error ? err.message : '씬을 불러오지 못했습니다')
       }
     })
     e.target.value = ''

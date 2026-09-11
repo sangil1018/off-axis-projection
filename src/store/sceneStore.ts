@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useGLTF } from '@react-three/drei'
+import { sanitizeScene } from './importValidation'
 
 export type Vec3 = [number, number, number]
 
@@ -340,20 +341,18 @@ export const useScene = create<SceneState>()(
       },
 
       importScene: (data) => {
-        const d = data as Partial<SceneState> & { objects?: SceneObject[] }
-        if (!d || typeof d !== 'object') return
+        const result = sanitizeScene(data, DEFAULT_SETTINGS)
+        if (!result.ok) {
+          throw new Error(result.reason)
+        }
+        const { scene } = result
         get().objects.forEach((o) => releaseUrl(o.url))
         set({
-          objects: (d.objects ?? []).map((o) => ({
-            ...o,
-            id: uid(),
-            isBlob: !o.url || o.url.startsWith('blob:'),
-            fitted: o.fitted ?? true,
-            shake: o.shake ?? false,
-            shakeIntensity: o.shakeIntensity ?? 1,
-          })),
-          lights: (d.lights ?? DEFAULT_LIGHTS).map((l) => ({ ...l, id: uid() })),
-          settings: { ...DEFAULT_SETTINGS, ...(d.settings ?? {}) },
+          objects: scene.objects.map((o) => ({ ...o, id: uid() })),
+          lights: scene.lights.length
+            ? scene.lights.map((l) => ({ ...l, id: uid() }))
+            : DEFAULT_LIGHTS.map((l) => ({ ...l, id: uid() })),
+          settings: scene.settings,
           selectedId: null,
           objectErrors: {},
         })
