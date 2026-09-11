@@ -12,6 +12,9 @@ export type UseViewpointOptions = {
   onFallback?: (reason: string) => void
   /** element the pointer source measures against (defaults to window) */
   pointerTarget?: React.RefObject<HTMLElement> | null
+  /** master switch — false stops the webcam/pointer listener entirely
+   * (e.g. while an orbit-camera editor mode owns the view instead) */
+  enabled?: boolean
 }
 
 /**
@@ -22,20 +25,21 @@ export type UseViewpointOptions = {
  *   // inside <Canvas>: <OffAxisCamera eye={viewpoint} screen={screen} />
  */
 export function useViewpoint(opts: UseViewpointOptions): ViewpointResult {
+  const enabled = opts.enabled ?? true
   const face = useFaceViewpoint({
-    enabled: opts.source === 'face',
+    enabled: enabled && opts.source === 'face',
     screen: opts.screen,
     tracking: opts.tracking,
     onFallback: opts.onFallback,
   })
   const hand = useHandViewpoint({
-    enabled: opts.source === 'hand',
+    enabled: enabled && opts.source === 'hand',
     screen: opts.screen,
     tracking: opts.tracking,
     onFallback: opts.onFallback,
   })
   const pointer = usePointerViewpoint({
-    enabled: opts.source === 'mouse',
+    enabled: enabled && opts.source === 'mouse',
     screen: opts.screen,
     tracking: opts.tracking,
     target: opts.pointerTarget,

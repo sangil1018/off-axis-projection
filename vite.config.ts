@@ -9,7 +9,9 @@ import react from '@vitejs/plugin-react'
 function cspMetaPlugin(): Plugin {
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'wasm-unsafe-eval'",
+    // MediaPipe's FilesetResolver loads its wasm glue as a <script> element
+    // from jsdelivr, not just fetch() — needs the host in script-src too
+    "script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net",
     // React sets inline style properties; MediaPipe/three may too
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
@@ -21,7 +23,8 @@ function cspMetaPlugin(): Plugin {
     "connect-src 'self' blob: data: https://cdn.jsdelivr.net https://storage.googleapis.com",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'self'",
+    // frame-ancestors is meaningless via <meta> (browsers ignore it there) —
+    // set it as a real HTTP header at the hosting layer instead
   ].join('; ')
 
   return {

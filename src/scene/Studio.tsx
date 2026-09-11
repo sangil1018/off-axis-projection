@@ -9,6 +9,7 @@ import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
 import { MicContext } from '../audio'
+import { EDITOR_ENABLED } from '../config'
 
 function DemoContent() {
   const objects = useScene((s) => s.objects)
@@ -51,7 +52,7 @@ export function Studio({
     far,
     background,
     exposure,
-    editMode,
+    editMode: rawEditMode,
     showFrame,
     showRoomGrid,
     roomDepthM,
@@ -73,6 +74,8 @@ export function Studio({
     })),
   )
   const select = useScene((s) => s.select)
+  // the orbit-camera editor view only exists in the editor build
+  const editMode = EDITOR_ENABLED && rawEditMode
 
   const dpr = useMemo<[number, number]>(
     () => [1, Math.max(0.5, 2 * resolutionScale)],

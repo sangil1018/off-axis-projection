@@ -3,6 +3,7 @@ import type { RefObject } from 'react'
 import type * as THREE from 'three'
 import { useScene } from '../store/sceneStore'
 import { useMic } from './MicContext'
+import { EDITOR_ENABLED } from '../config'
 
 /**
  * Drives a group's position/rotation with a mic-loudness-proportional jitter.
@@ -23,7 +24,8 @@ export function useMicShake(
     const g = ref.current
     if (!g) return
     const s = useScene.getState().settings
-    const active = s.micEnabled && enabled && !s.editMode
+    const editModeActive = EDITOR_ENABLED && s.editMode
+    const active = s.micEnabled && enabled && !editModeActive
     if (!active) {
       if (g.position.x || g.position.y || g.position.z || g.rotation.x) {
         g.position.set(0, 0, 0)

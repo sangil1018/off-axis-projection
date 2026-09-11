@@ -10,6 +10,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { useFittedSize } from './hooks/useFittedSize'
 import { useMicLevel } from './audio'
 import { useViewpoint, TrackerPreview } from './offaxis'
+import { EDITOR_ENABLED } from './config'
 
 function aspectRatioOf(mode: string, custom: number): number | null {
   switch (mode) {
@@ -42,6 +43,7 @@ export default function App() {
     strengthZ,
     smoothing,
     micEnabled,
+    editMode,
   } = useScene(
     useShallow((s) => ({
       aspectMode: s.settings.aspectMode,
@@ -55,20 +57,27 @@ export default function App() {
       strengthZ: s.settings.strengthZ,
       smoothing: s.settings.smoothing,
       micEnabled: s.settings.micEnabled,
+      editMode: s.settings.editMode,
     })),
   )
   const updateSettings = useScene((s) => s.updateSettings)
   const calibrating = useScene((s) => s.calibrating)
   const setCalibrating = useScene((s) => s.setCalibrating)
 
+  // the edit-mode orbit view only exists in the editor build
+  const editModeActive = EDITOR_ENABLED && editMode
+
   const ratio = aspectRatioOf(aspectMode, customAspect)
   const { ref, size } = useFittedSize(ratio)
 
+  // while editing, the mouse drives OrbitControls (pan/orbit/zoom) instead of
+  // the off-axis viewpoint — so face/hand/mouse tracking is fully paused
   const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
     source: headSource,
     screen: { widthM: screenWidthM, heightM: screenHeightM, distanceM: viewerDistanceM },
     tracking: { strengthX, strengthY, strengthZ, smoothing },
     onFallback: () => updateSettings({ headSource: 'mouse' }),
+    enabled: !editModeActive,
   })
 
   const { level: micLevel, status: micStatus } = useMicLevel(micEnabled, () =>
@@ -80,51 +89,47 @@ export default function App() {
     ;(window as unknown as { __mic?: unknown }).__mic = micLevel
   }
 
+  const viewport = (
+    <div ref={ref} className="flex h-full w-full items-center justify-center overflow-hidden bg-black">
+      <div className="relative overflow-hidden rounded" style={{ width: size.width, height: size.height }}>
+        {size.width > 0 && (
+          <ErrorBoundary
+            fallback={(err, retry) => (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
+                <p className="text-sm font-medium text-rose-300">3D 뷰 렌더 중 오류가 발생했습니다</p>
+                <p className="max-w-sm text-xs text-slate-400">{err.message}</p>
+                <button className="rounded bg-sky-600 px-3 py-1.5 text-xs font-medium" onClick={retry}>
+                  다시 시도
+                </button>
+              </div>
+            )}
+          >
+            <Studio eye={viewpoint} micLevel={micLevel} />
+          </ErrorBoundary>
+        )}
+        {headSource !== 'mouse' && !editModeActive && (
+          <TrackerPreview
+            source={headSource}
+            status={status}
+            message={message}
+            videoRef={videoRef}
+            visualRef={visualRef}
+            onUsePointer={() => updateSettings({ headSource: 'mouse' })}
+          />
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <div className="flex h-full w-full flex-col">
-      <Toolbar />
+      {EDITOR_ENABLED && <Toolbar />}
       <div className="relative flex min-h-0 flex-1">
-        <Outliner />
-        <DropZone>
-          <div ref={ref} className="flex h-full w-full items-center justify-center overflow-hidden bg-black">
-            <div
-              className="relative overflow-hidden rounded"
-              style={{ width: size.width, height: size.height }}
-            >
-              {size.width > 0 && (
-                <ErrorBoundary
-                  fallback={(err, retry) => (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
-                      <p className="text-sm font-medium text-rose-300">3D 뷰 렌더 중 오류가 발생했습니다</p>
-                      <p className="max-w-sm text-xs text-slate-400">{err.message}</p>
-                      <button
-                        className="rounded bg-sky-600 px-3 py-1.5 text-xs font-medium"
-                        onClick={retry}
-                      >
-                        다시 시도
-                      </button>
-                    </div>
-                  )}
-                >
-                  <Studio eye={viewpoint} micLevel={micLevel} />
-                </ErrorBoundary>
-              )}
-              {headSource !== 'mouse' && (
-                <TrackerPreview
-                  source={headSource}
-                  status={status}
-                  message={message}
-                  videoRef={videoRef}
-                  visualRef={visualRef}
-                  onUsePointer={() => updateSettings({ headSource: 'mouse' })}
-                />
-              )}
-            </div>
-          </div>
-        </DropZone>
-        <Inspector micLevel={micLevel} micStatus={micStatus} />
+        {EDITOR_ENABLED && <Outliner />}
+        {EDITOR_ENABLED ? <DropZone>{viewport}</DropZone> : viewport}
+        {EDITOR_ENABLED && <Inspector micLevel={micLevel} micStatus={micStatus} />}
       </div>
-      {calibrating && <CalibrationWizard onClose={() => setCalibrating(false)} />}
+      {EDITOR_ENABLED && calibrating && <CalibrationWizard onClose={() => setCalibrating(false)} />}
     </div>
   )
 }

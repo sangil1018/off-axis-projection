@@ -5,6 +5,7 @@ import { useThree } from '@react-three/fiber'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import { useScene, type SceneObject } from '../store/sceneStore'
 import { useMicShake } from '../audio'
+import { EDITOR_ENABLED } from '../config'
 
 const DRACO_PATH = 'decoders/draco/'
 const BASIS_PATH = 'decoders/basis/'
@@ -112,8 +113,9 @@ export function GltfEntity({ obj }: { obj: SceneObject }) {
   const setHovered = useScene((s) => s.setHovered)
   const updateObject = useScene((s) => s.updateObject)
 
-  const selected = selectedId === obj.id
-  const hovered = hoveredId === obj.id
+  // selection/hover/gizmo are editor-only — a production viewer never selects
+  const selected = EDITOR_ENABLED && selectedId === obj.id
+  const hovered = EDITOR_ENABLED && hoveredId === obj.id
   const [rootReady, setRootReady] = useState(false)
 
   useEffect(() => {
@@ -155,18 +157,30 @@ export function GltfEntity({ obj }: { obj: SceneObject }) {
     <>
       <group
         ref={groupRef}
-        onClick={(e) => {
-          e.stopPropagation()
-          select(obj.id)
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation()
-          setHovered(obj.id)
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation()
-          if (useScene.getState().hoveredId === obj.id) setHovered(null)
-        }}
+        onClick={
+          EDITOR_ENABLED
+            ? (e) => {
+                e.stopPropagation()
+                select(obj.id)
+              }
+            : undefined
+        }
+        onPointerOver={
+          EDITOR_ENABLED
+            ? (e) => {
+                e.stopPropagation()
+                setHovered(obj.id)
+              }
+            : undefined
+        }
+        onPointerOut={
+          EDITOR_ENABLED
+            ? (e) => {
+                e.stopPropagation()
+                if (useScene.getState().hoveredId === obj.id) setHovered(null)
+              }
+            : undefined
+        }
       >
         <group ref={shakeRef}>
           {obj.url ? (
