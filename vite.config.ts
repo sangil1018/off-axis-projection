@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 /**
  * Injects a Content-Security-Policy <meta> tag into the production build only.
@@ -40,7 +41,18 @@ function cspMetaPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), cspMetaPlugin()],
+  plugins: [
+    react(),
+    cspMetaPlugin(),
+    // getUserMedia (camera/mic) only exists in a secure context — HTTPS, or
+    // localhost. Opening the dev server's network URL (http://<lan-ip>:5173)
+    // from another device is plain HTTP, so that device can never use the
+    // camera without this. Self-signed, dev-only — `apply: 'serve'` keeps it
+    // out of `vite build` entirely; the browser will warn about the
+    // certificate once (Advanced -> proceed) the first time each device
+    // opens it.
+    { ...basicSsl(), apply: 'serve' },
+  ],
   server: { host: true },
   build: {
     rollupOptions: {

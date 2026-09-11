@@ -95,6 +95,12 @@ CI(`.github/workflows/ci.yml`)가 push/PR마다 lint·typecheck·test·build·�
 
 > 웹캠 얼굴 추적은 `localhost` 또는 `https` 에서만 동작합니다. 권한을 거부하면
 > 자동으로 마우스 모드로 전환됩니다.
+>
+> 개발 서버는 `@vitejs/plugin-basic-ssl`로 자체 서명 인증서를 붙여
+> `https://`로 뜹니다(`npm run dev` 실행 시 터미널에 뜨는 `Network:` 주소 참고).
+> 같은 네트워크의 다른 기기(휴대폰 등)에서 그 주소로 처음 접속하면 브라우저가
+> "안전하지 않음" 경고를 띄우는데, 자체 서명 인증서라 그런 것뿐이니 고급(Advanced)
+> → 계속 진행을 눌러 넘어가면 됩니다(기기당 한 번만).
 
 ## 조작
 
