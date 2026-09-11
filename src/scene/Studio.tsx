@@ -2,6 +2,7 @@ import { Suspense, useMemo } from 'react'
 import * as THREE from 'three'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
+import { useShallow } from 'zustand/react/shallow'
 import { useScene } from '../store/sceneStore'
 import { OffAxisCamera, WindowFrame, RoomGrid, type Viewpoint } from '../offaxis'
 import { SceneObjects } from './SceneObjects'
@@ -37,56 +38,73 @@ export function Studio({
   eye: React.MutableRefObject<Viewpoint>
   micLevel: React.MutableRefObject<number>
 }) {
-  const settings = useScene((s) => s.settings)
+  // narrow subscription: Studio only re-renders when a field it actually uses
+  // changes (not on every settings tick — tracking/mic/aspect sliders live
+  // elsewhere and shouldn't re-render the Canvas tree)
+  const {
+    resolutionScale,
+    screenWidthM,
+    screenHeightM,
+    viewerDistanceM,
+    shadows,
+    near,
+    far,
+    background,
+    exposure,
+    editMode,
+    showFrame,
+    showRoomGrid,
+    roomDepthM,
+  } = useScene(
+    useShallow((s) => ({
+      resolutionScale: s.settings.resolutionScale,
+      screenWidthM: s.settings.screenWidthM,
+      screenHeightM: s.settings.screenHeightM,
+      viewerDistanceM: s.settings.viewerDistanceM,
+      shadows: s.settings.shadows,
+      near: s.settings.near,
+      far: s.settings.far,
+      background: s.settings.background,
+      exposure: s.settings.exposure,
+      editMode: s.settings.editMode,
+      showFrame: s.settings.showFrame,
+      showRoomGrid: s.settings.showRoomGrid,
+      roomDepthM: s.settings.roomDepthM,
+    })),
+  )
   const select = useScene((s) => s.select)
 
   const dpr = useMemo<[number, number]>(
-    () => [1, Math.max(0.5, 2 * settings.resolutionScale)],
-    [settings.resolutionScale],
+    () => [1, Math.max(0.5, 2 * resolutionScale)],
+    [resolutionScale],
   )
 
-  const screen = {
-    widthM: settings.screenWidthM,
-    heightM: settings.screenHeightM,
-    distanceM: settings.viewerDistanceM,
-  }
+  const screen = { widthM: screenWidthM, heightM: screenHeightM, distanceM: viewerDistanceM }
 
   return (
     <Canvas
-      shadows={settings.shadows}
+      shadows={shadows}
       dpr={dpr}
       gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
-      camera={{ position: [0, 0, settings.viewerDistanceM], near: settings.near, far: settings.far }}
+      camera={{ position: [0, 0, viewerDistanceM], near, far }}
       onPointerMissed={() => select(null)}
-      style={{ background: settings.background }}
+      style={{ background }}
     >
-      <color attach="background" args={[settings.background]} />
-      <ExposureSync exposure={settings.exposure} />
+      <color attach="background" args={[background]} />
+      <ExposureSync exposure={exposure} />
       {import.meta.env.DEV && <DebugBridge />}
 
       <MicContext.Provider value={micLevel}>
-        <OffAxisCamera
-          eye={eye}
-          screen={screen}
-          near={settings.near}
-          far={settings.far}
-          enabled={!settings.editMode}
-        />
-        {settings.editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
+        <OffAxisCamera eye={eye} screen={screen} near={near} far={far} enabled={!editMode} />
+        {editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
 
         <Lights />
         <Suspense fallback={null}>
           <SceneEnvironment />
         </Suspense>
-        {settings.showFrame && (
-          <WindowFrame widthM={settings.screenWidthM} heightM={settings.screenHeightM} />
-        )}
-        {settings.showRoomGrid && (
-          <RoomGrid
-            widthM={settings.screenWidthM}
-            heightM={settings.screenHeightM}
-            depthM={settings.roomDepthM}
-          />
+        {showFrame && <WindowFrame widthM={screenWidthM} heightM={screenHeightM} />}
+        {showRoomGrid && (
+          <RoomGrid widthM={screenWidthM} heightM={screenHeightM} depthM={roomDepthM} />
         )}
         <SceneObjects />
         <DemoContent />

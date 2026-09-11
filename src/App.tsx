@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow'
 import { useScene } from './store/sceneStore'
 import { Studio } from './scene/Studio'
 import { Toolbar } from './editor/Toolbar'
@@ -26,33 +27,52 @@ function aspectRatioOf(mode: string, custom: number): number | null {
 }
 
 export default function App() {
-  const settings = useScene((s) => s.settings)
+  // narrow subscription: App only re-renders when a field it actually reads
+  // changes — render/look settings (exposure, shadows, background, …) live in
+  // Studio/Inspector and shouldn't re-render this shell on every tick
+  const {
+    aspectMode,
+    customAspect,
+    headSource,
+    screenWidthM,
+    screenHeightM,
+    viewerDistanceM,
+    strengthX,
+    strengthY,
+    strengthZ,
+    smoothing,
+    micEnabled,
+  } = useScene(
+    useShallow((s) => ({
+      aspectMode: s.settings.aspectMode,
+      customAspect: s.settings.customAspect,
+      headSource: s.settings.headSource,
+      screenWidthM: s.settings.screenWidthM,
+      screenHeightM: s.settings.screenHeightM,
+      viewerDistanceM: s.settings.viewerDistanceM,
+      strengthX: s.settings.strengthX,
+      strengthY: s.settings.strengthY,
+      strengthZ: s.settings.strengthZ,
+      smoothing: s.settings.smoothing,
+      micEnabled: s.settings.micEnabled,
+    })),
+  )
   const updateSettings = useScene((s) => s.updateSettings)
   const calibrating = useScene((s) => s.calibrating)
   const setCalibrating = useScene((s) => s.setCalibrating)
 
-  const ratio = aspectRatioOf(settings.aspectMode, settings.customAspect)
+  const ratio = aspectRatioOf(aspectMode, customAspect)
   const { ref, size } = useFittedSize(ratio)
 
   const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
-    source: settings.headSource,
-    screen: {
-      widthM: settings.screenWidthM,
-      heightM: settings.screenHeightM,
-      distanceM: settings.viewerDistanceM,
-    },
-    tracking: {
-      strengthX: settings.strengthX,
-      strengthY: settings.strengthY,
-      strengthZ: settings.strengthZ,
-      smoothing: settings.smoothing,
-    },
+    source: headSource,
+    screen: { widthM: screenWidthM, heightM: screenHeightM, distanceM: viewerDistanceM },
+    tracking: { strengthX, strengthY, strengthZ, smoothing },
     onFallback: () => updateSettings({ headSource: 'mouse' }),
   })
 
-  const { level: micLevel, status: micStatus } = useMicLevel(
-    settings.micEnabled,
-    () => updateSettings({ micEnabled: false }),
+  const { level: micLevel, status: micStatus } = useMicLevel(micEnabled, () =>
+    updateSettings({ micEnabled: false }),
   )
 
   if (import.meta.env.DEV) {
@@ -89,9 +109,9 @@ export default function App() {
                   <Studio eye={viewpoint} micLevel={micLevel} />
                 </ErrorBoundary>
               )}
-              {settings.headSource !== 'mouse' && (
+              {headSource !== 'mouse' && (
                 <TrackerPreview
-                  source={settings.headSource}
+                  source={headSource}
                   status={status}
                   message={message}
                   videoRef={videoRef}
