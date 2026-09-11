@@ -8,7 +8,7 @@ import { OffAxisCamera, WindowFrame, RoomGrid, type Viewpoint } from '../offaxis
 import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
-import { MicContext } from './MicContext'
+import { MicContext } from '../audio'
 
 function DemoContent() {
   const objects = useScene((s) => s.objects)

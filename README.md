@@ -37,8 +37,11 @@ const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
 ```
 
 - `useFaceViewpoint` / `useHandViewpoint` / `usePointerViewpoint` — 개별 훅으로도 사용 가능
-- `computeOffAxis()` — 순수 함수 (Kooima projection matrix)
+- `computeOffAxis()` — 순수 함수 (Kooima projection matrix), `src/offaxis/projection.test.ts`로 검증됨
 - `ViewpointSmoother` — EMA 스무더
+
+마이크 관련(`useMicLevel`, `MicContext`, `useMicShake`)도 같은 방식으로
+`src/audio/`에 스토어 의존성 없이 분리돼 있습니다.
 - **glTF / GLB**: 창에 드래그드롭, 또는 툴바에서 라이브러리 모델 / URL 로 추가.
   로드 시 자동으로 크기·위치가 보정됨(auto-fit). TransformControls 기즈모(T/R/S)로
   이동·회전·스케일, Inspector에서 수치 편집. **DRACO · Meshopt · KTX2** 압축 GLB 지원
@@ -73,7 +76,20 @@ npm install
 npm run dev
 ```
 
-`npm run build` — 타입체크 + 프로덕션 빌드.
+`src/store/`는 zustand slices 패턴으로 구성됩니다: `objectsSlice` / `lightsSlice` /
+`settingsSlice` / `uiSlice`를 `sceneStore.ts`가 결합하고, 여러 슬라이스에 걸친
+액션(reset/export/import)만 그 파일에 남아있습니다. 외부에서는 여전히
+`useScene()` 훅 하나로 씁니다.
+
+`npm run build` — 타입체크 + 프로덕션 빌드. `npm run lint` — ESLint. `npm run test`
+— Vitest(`src/offaxis/projection.test.ts`가 off-axis 절두체 수식을 검증).
+`npm run typecheck`.
+
+CI(`.github/workflows/ci.yml`)가 push/PR마다 lint·typecheck·test·build·프로덕션
+의존성 `npm audit`을 실행합니다.
+
+프로덕션 빌드에만 Content-Security-Policy `<meta>`가 주입됩니다(`vite.config.ts`
+의 `cspMetaPlugin`) — 개발 서버(HMR 웹소켓)는 영향받지 않습니다.
 
 > 웹캠 얼굴 추적은 `localhost` 또는 `https` 에서만 동작합니다. 권한을 거부하면
 > 자동으로 마우스 모드로 전환됩니다.

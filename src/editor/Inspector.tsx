@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useScene, type LightType } from '../store/sceneStore'
-import type { MicStatus } from '../hooks/useMicLevel'
+import type { MicStatus } from '../audio'
 import {
   ColorField,
   NumberField,

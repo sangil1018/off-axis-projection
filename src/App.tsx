@@ -8,7 +8,7 @@ import { DropZone } from './editor/DropZone'
 import { CalibrationWizard } from './components/CalibrationWizard'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useFittedSize } from './hooks/useFittedSize'
-import { useMicLevel } from './hooks/useMicLevel'
+import { useMicLevel } from './audio'
 import { useViewpoint, TrackerPreview } from './offaxis'
 
 function aspectRatioOf(mode: string, custom: number): number | null {

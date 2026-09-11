@@ -44,6 +44,11 @@ export type TrackerPreviewProps = {
  * Self-contained webcam preview for the face / hand viewpoint sources, with a
  * live landmark overlay (full skeleton for the hand). DOM component — render it
  * anywhere outside the `<Canvas>`.
+ *
+ * Note: the default chrome (border/background/status dot/etc.) is styled with
+ * Tailwind utility classes, so it renders unstyled in a project without
+ * Tailwind. Pass `className` to fully replace it, or copy this component and
+ * inline the styles if you need it Tailwind-free.
  */
 export function TrackerPreview({
   source,

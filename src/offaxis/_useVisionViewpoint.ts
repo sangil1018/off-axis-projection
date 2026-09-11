@@ -166,7 +166,6 @@ export function useVisionViewpoint<L>(
       videoRef.current = null
       visualRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opts.enabled, strategy])
 
   return { viewpoint, status, message, videoRef, visualRef }

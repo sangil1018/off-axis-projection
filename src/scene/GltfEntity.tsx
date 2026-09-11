@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useGLTF, TransformControls } from '@react-three/drei'
-import { useThree, useFrame } from '@react-three/fiber'
+import { useThree } from '@react-three/fiber'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import { useScene, type SceneObject } from '../store/sceneStore'
-import { useMic } from './MicContext'
+import { useMicShake } from '../audio'
 
 const DRACO_PATH = 'decoders/draco/'
 const BASIS_PATH = 'decoders/basis/'
@@ -13,16 +13,13 @@ type Bounds = { size: [number, number, number]; center: [number, number, number]
 /** Wireframe box around a model — bold cyan for selection, faint for hover. */
 function HighlightBox({ bounds, kind }: { bounds: Bounds; kind: 'select' | 'hover' }) {
   const pad = kind === 'select' ? 1.05 : 1.02
+  const [sx, sy, sz] = bounds.size
   const geo = useMemo(() => {
-    const box = new THREE.BoxGeometry(
-      bounds.size[0] * pad,
-      bounds.size[1] * pad,
-      bounds.size[2] * pad,
-    )
+    const box = new THREE.BoxGeometry(sx * pad, sy * pad, sz * pad)
     const edges = new THREE.EdgesGeometry(box)
     box.dispose()
     return edges
-  }, [bounds.size[0], bounds.size[1], bounds.size[2], pad])
+  }, [sx, sy, sz, pad])
   useEffect(() => () => geo.dispose(), [geo])
   return (
     <lineSegments geometry={geo} position={bounds.center} renderOrder={999}>
@@ -114,7 +111,6 @@ export function GltfEntity({ obj }: { obj: SceneObject }) {
   const select = useScene((s) => s.select)
   const setHovered = useScene((s) => s.setHovered)
   const updateObject = useScene((s) => s.updateObject)
-  const mic = useMic()
 
   const selected = selectedId === obj.id
   const hovered = hoveredId === obj.id
@@ -124,35 +120,7 @@ export function GltfEntity({ obj }: { obj: SceneObject }) {
     setRootReady(true)
   }, [])
 
-  // mic-driven shake: magnitude ∝ max(0, loudness - threshold)
-  useFrame(() => {
-    const g = shakeRef.current
-    if (!g) return
-    const s = useScene.getState().settings
-    const active = s.micEnabled && obj.shake && !s.editMode
-    if (!active) {
-      if (g.position.x || g.position.y || g.position.z || g.rotation.x) {
-        g.position.set(0, 0, 0)
-        g.rotation.set(0, 0, 0)
-      }
-      return
-    }
-    const over = Math.max(0, mic.current - s.micThreshold)
-    const amt = over * s.micGain * obj.shakeIntensity
-    const t = performance.now() * 0.001
-    const j = amt * 0.045
-    g.position.set(
-      (Math.sin(t * 97.1) + Math.sin(t * 53.3)) * 0.5 * j,
-      (Math.sin(t * 61.7) + Math.sin(t * 88.9)) * 0.5 * j,
-      (Math.sin(t * 71.3) + Math.sin(t * 43.7)) * 0.5 * j,
-    )
-    const r = amt * 0.13
-    g.rotation.set(
-      Math.sin(t * 67.2) * r,
-      Math.sin(t * 59.5) * r,
-      Math.sin(t * 73.9) * r,
-    )
-  })
+  useMicShake(shakeRef, obj.shake, obj.shakeIntensity)
 
   useEffect(() => {
     const g = groupRef.current
