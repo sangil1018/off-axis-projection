@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
@@ -10,6 +10,10 @@ import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
 import { MicContext } from '../audio'
 import { EDITOR_ENABLED } from '../config'
+
+// where the Edit-mode orbit camera looks by default — matches DemoContent's
+// depth so an empty scene frames nicely
+const EDIT_TARGET: [number, number, number] = [0, 0, -0.3]
 
 function DemoContent() {
   const objects = useScene((s) => s.objects)
@@ -101,7 +105,14 @@ export function Studio({
 
       <MicContext.Provider value={micLevel}>
         <OffAxisCamera eye={eye} screen={screen} near={near} far={far} enabled={!editMode} />
-        {editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
+        <EditCameraReset
+          active={editMode}
+          distanceM={viewerDistanceM}
+          fovDeg={fovDeg}
+          near={near}
+          far={far}
+        />
+        {editMode && <OrbitControls makeDefault target={EDIT_TARGET} />}
 
         <Lights />
         <Suspense fallback={null}>
@@ -116,6 +127,45 @@ export function Studio({
       </MicContext.Provider>
     </Canvas>
   )
+}
+
+/**
+ * OffAxisCamera writes straight to camera.position/quaternion/projectionMatrix
+ * every frame while Preview is active, bypassing the normal fov-based matrix
+ * entirely. If Edit mode just inherits whatever that left behind — the eye's
+ * last tracked position, a skewed asymmetric projection — OrbitControls starts
+ * from a nonsensical, jump-cut view. Reset the camera to a plain symmetric
+ * default the instant Edit mode turns on, so Preview -> Edit always starts
+ * from the same predictable framing.
+ */
+function EditCameraReset({
+  active,
+  distanceM,
+  fovDeg,
+  near,
+  far,
+}: {
+  active: boolean
+  distanceM: number
+  fovDeg: number
+  near: number
+  far: number
+}) {
+  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera
+  const wasActive = useRef(false)
+  useEffect(() => {
+    if (active && !wasActive.current) {
+      camera.up.set(0, 1, 0)
+      camera.position.set(0, 0, distanceM)
+      camera.lookAt(...EDIT_TARGET)
+      camera.fov = fovDeg
+      camera.near = near
+      camera.far = far
+      camera.updateProjectionMatrix()
+    }
+    wasActive.current = active
+  }, [active, camera, distanceM, fovDeg, near, far])
+  return null
 }
 
 function DebugBridge() {

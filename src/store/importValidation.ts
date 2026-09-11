@@ -121,6 +121,9 @@ export function sanitizeSettings(raw: unknown, defaults: Settings): Settings {
     far: num(r.far, 1, 10000, defaults.far),
     // never auto-trigger a camera prompt from a file — land on mouse, same as mic
     headSource: 'mouse',
+    // a device id is a per-browser-profile hash from whoever exported the
+    // file — meaningless (or worse, misleading) on this machine
+    cameraDeviceId: null,
     strengthX: num(r.strengthX, 0, 10, defaults.strengthX),
     strengthY: num(r.strengthY, 0, 10, defaults.strengthY),
     strengthZ: num(r.strengthZ, 0, 10, defaults.strengthZ),

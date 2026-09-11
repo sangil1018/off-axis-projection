@@ -70,6 +70,8 @@ export type Settings = {
   far: number
   // viewpoint tracking
   headSource: 'face' | 'hand' | 'mouse'
+  /** deviceId of the chosen webcam, or null to let the browser pick */
+  cameraDeviceId: string | null
   strengthX: number
   strengthY: number
   strengthZ: number

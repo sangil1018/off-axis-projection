@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HAND_CONNECTIONS } from './useHandViewpoint'
 import type { TrackerVisual, TrackStatus, ViewpointSource } from './types'
 
@@ -37,6 +37,12 @@ export type TrackerPreviewProps = {
   visualRef: React.MutableRefObject<TrackerVisual>
   /** shown as a button while status === 'error' */
   onUsePointer?: () => void
+  /** currently-selected webcam; null lets the browser pick one (usually the
+   * OS default, not necessarily what the user wants when several are
+   * plugged in) */
+  deviceId?: string | null
+  /** shown (as a <select>) only when 2+ video inputs are available */
+  onSelectDevice?: (deviceId: string | null) => void
   className?: string
 }
 
@@ -57,10 +63,35 @@ export function TrackerPreview({
   videoRef,
   visualRef,
   onUsePointer,
+  deviceId,
+  onSelectDevice,
   className,
 }: TrackerPreviewProps) {
   const holderRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+
+  // list webcams once we're allowed to (labels are blank until a getUserMedia
+  // call has granted permission at least once) and keep it live if the user
+  // plugs/unplugs one
+  useEffect(() => {
+    if (!onSelectDevice) return
+    let cancelled = false
+    const refresh = () => {
+      navigator.mediaDevices
+        ?.enumerateDevices()
+        .then((all) => {
+          if (!cancelled) setDevices(all.filter((d) => d.kind === 'videoinput'))
+        })
+        .catch(() => {})
+    }
+    refresh()
+    navigator.mediaDevices?.addEventListener('devicechange', refresh)
+    return () => {
+      cancelled = true
+      navigator.mediaDevices?.removeEventListener('devicechange', refresh)
+    }
+  }, [onSelectDevice, status])
 
   // mount the shared <video> element into this preview
   useEffect(() => {
@@ -164,6 +195,21 @@ export function TrackerPreview({
         <div className="px-2 pb-1.5 text-[10px] leading-tight text-slate-400">
           {message}
         </div>
+      )}
+      {onSelectDevice && devices.length > 1 && (
+        <select
+          className="w-full truncate border-t border-slate-700 bg-slate-800 px-2 py-1 text-[10px] text-slate-200 outline-none"
+          value={deviceId ?? ''}
+          onChange={(e) => onSelectDevice(e.target.value || null)}
+          title="사용할 카메라 선택"
+        >
+          <option value="">카메라 자동 선택</option>
+          {devices.map((d, i) => (
+            <option key={d.deviceId} value={d.deviceId}>
+              {d.label || `카메라 ${i + 1}`}
+            </option>
+          ))}
+        </select>
       )}
     </div>
   )

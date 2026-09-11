@@ -37,6 +37,7 @@ export default function App() {
     aspectMode,
     customAspect,
     headSource,
+    cameraDeviceId,
     screenWidthM,
     screenHeightM,
     viewerDistanceM,
@@ -51,6 +52,7 @@ export default function App() {
       aspectMode: s.settings.aspectMode,
       customAspect: s.settings.customAspect,
       headSource: s.settings.headSource,
+      cameraDeviceId: s.settings.cameraDeviceId,
       screenWidthM: s.settings.screenWidthM,
       screenHeightM: s.settings.screenHeightM,
       viewerDistanceM: s.settings.viewerDistanceM,
@@ -82,6 +84,7 @@ export default function App() {
     source: headSource,
     screen: { widthM: screenWidthM, heightM: screenHeightM, distanceM: viewerDistanceM },
     tracking: { strengthX, strengthY, strengthZ, smoothing },
+    deviceId: cameraDeviceId,
     onFallback: () => updateSettings({ headSource: 'mouse' }),
     enabled: !editModeActive,
   })
@@ -121,6 +124,8 @@ export default function App() {
             videoRef={videoRef}
             visualRef={visualRef}
             onUsePointer={() => updateSettings({ headSource: 'mouse' })}
+            deviceId={cameraDeviceId}
+            onSelectDevice={(id) => updateSettings({ cameraDeviceId: id })}
           />
         )}
         <button

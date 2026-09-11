@@ -24,6 +24,7 @@ export const DEFAULT_SETTINGS: Settings = {
   near: 0.05,
   far: 100,
   headSource: 'face',
+  cameraDeviceId: null,
   strengthX: 1,
   strengthY: 1,
   strengthZ: 1,

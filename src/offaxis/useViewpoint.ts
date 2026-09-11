@@ -10,6 +10,8 @@ export type UseViewpointOptions = {
   tracking: TrackingConfig
   /** invoked with a reason when a webcam source cannot start */
   onFallback?: (reason: string) => void
+  /** which webcam to open for face/hand sources; null lets the browser pick */
+  deviceId?: string | null
   /** element the pointer source measures against (defaults to window) */
   pointerTarget?: React.RefObject<HTMLElement> | null
   /** master switch — false stops the webcam/pointer listener entirely
@@ -30,12 +32,14 @@ export function useViewpoint(opts: UseViewpointOptions): ViewpointResult {
     enabled: enabled && opts.source === 'face',
     screen: opts.screen,
     tracking: opts.tracking,
+    deviceId: opts.deviceId,
     onFallback: opts.onFallback,
   })
   const hand = useHandViewpoint({
     enabled: enabled && opts.source === 'hand',
     screen: opts.screen,
     tracking: opts.tracking,
+    deviceId: opts.deviceId,
     onFallback: opts.onFallback,
   })
   const pointer = usePointerViewpoint({

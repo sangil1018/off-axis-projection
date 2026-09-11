@@ -40,6 +40,8 @@ export type VisionViewpointOptions = {
   enabled: boolean
   screen: ScreenConfig
   tracking: TrackingConfig
+  /** which webcam to open; null/undefined lets the browser pick a default */
+  deviceId?: string | null
   /** called once if the webcam / model cannot start */
   onFallback?: (reason: string) => void
 }
@@ -113,7 +115,7 @@ export function useVisionViewpoint<L>(
         // landmark detection works on any frame size, so let the camera use
         // whatever native mode it decodes correctly.
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user' },
+          video: opts.deviceId ? { deviceId: { exact: opts.deviceId } } : { facingMode: 'user' },
         })
         if (cancelled) return
         video.srcObject = stream
@@ -171,7 +173,7 @@ export function useVisionViewpoint<L>(
       videoRef.current = null
       visualRef.current = null
     }
-  }, [opts.enabled, strategy])
+  }, [opts.enabled, opts.deviceId, strategy])
 
   return { viewpoint, status, message, videoRef, visualRef }
 }
