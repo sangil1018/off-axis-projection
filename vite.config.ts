@@ -40,7 +40,12 @@ function cspMetaPlugin(): Plugin {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves a project site under /<repo-name>/, not the domain
+  // root, so every asset URL the build emits needs that prefix. Only for
+  // `vite build` — the dev server still serves from `/` so `npm run dev`
+  // doesn't need a matching path.
+  base: command === 'build' ? '/off-axis-projection/' : '/',
   plugins: [
     react(),
     cspMetaPlugin(),
@@ -82,4 +87,4 @@ export default defineConfig({
     // prevents — raise the bar past three's own isolated chunk
     chunkSizeWarningLimit: 950,
   },
-})
+}))

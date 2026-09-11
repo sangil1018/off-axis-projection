@@ -2,8 +2,12 @@
 
 [![CI](https://github.com/sangil1018/off-axis-projection/actions/workflows/ci.yml/badge.svg)](https://github.com/sangil1018/off-axis-projection/actions/workflows/ci.yml)
 
-`icurtis1/off-axis-sneaker`의 off-axis(비대칭 절두체) 프로젝션 효과를 재현하고,
-그 위에 씬 에디터를 얹은 프로젝트.
+**[🚀 데모 바로 열기](https://sangil1018.github.io/off-axis-projection/)**
+
+[`icurtis1/off-axis-sneaker`](https://github.com/icurtis1/off-axis-sneaker)의
+off-axis(비대칭 절두체) 프로젝션 효과를 참고해 재현하고, 그 위에 씬 에디터를
+얹은 프로젝트. 전체 코드는 [Claude Code](https://claude.com/claude-code)와의
+협업으로 작성했습니다.
 
 ## 기능
 
