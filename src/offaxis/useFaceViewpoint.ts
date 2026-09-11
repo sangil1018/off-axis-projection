@@ -27,11 +27,12 @@ function makeFaceStrategy(): VisionStrategy<FaceLandmarker> {
       const res = lmk.detectForVideo(video, ts)
       const lm = res.faceLandmarks?.[0]
       if (!lm) return null
-      const rEye = lm[33]
-      const lEye = lm[263]
+      const rEye = lm[33] // right eye outer corner
+      const lEye = lm[263] // left eye outer corner
+      const nose = lm[1] // nose tip — steadies the anchor against head roll
       return {
-        px: (rEye.x + lEye.x) / 2,
-        py: (rEye.y + lEye.y) / 2,
+        px: (rEye.x + lEye.x + nose.x) / 3,
+        py: (rEye.y + lEye.y + nose.y) / 3,
         // inter-ocular distance as the depth proxy
         spread: Math.hypot(lEye.x - rEye.x, lEye.y - rEye.y) || 0.12,
         refSpread: 0.12,

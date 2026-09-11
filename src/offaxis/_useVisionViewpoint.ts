@@ -131,9 +131,12 @@ export function useVisionViewpoint<L>(
           visualRef.current = { kind: strategy.visualKind, landmarks: reading.landmarks }
 
           const { screen, tracking } = cfgRef.current
+          // keep the anchor away from the frame edge so the frustum can't blow up
+          const px = clamp(reading.px, 0.15, 0.85)
+          const py = clamp(reading.py, 0.15, 0.85)
           // webcam is mirrored: invert X so moving right -> view moves right
-          const x = (0.5 - reading.px) * screen.widthM * 3.2 * tracking.strengthX
-          const y = (0.5 - reading.py) * screen.heightM * 3.2 * tracking.strengthY
+          const x = (0.5 - px) * screen.widthM * 3.2 * tracking.strengthX
+          const y = (0.5 - py) * screen.heightM * 3.2 * tracking.strengthY
           const zRaw = clamp(
             screen.distanceM * (reading.refSpread / Math.max(reading.spread, 1e-4)),
             screen.distanceM * 0.4,
