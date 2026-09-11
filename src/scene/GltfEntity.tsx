@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useGLTF, TransformControls } from '@react-three/drei'
-import { useThree } from '@react-three/fiber'
+import { useThree, useFrame } from '@react-three/fiber'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import { useScene, type SceneObject } from '../store/sceneStore'
+import { useMic } from './MicContext'
 
 const DRACO_PATH = 'decoders/draco/'
 const BASIS_PATH = 'decoders/basis/'
@@ -58,13 +59,45 @@ function Model({
 
 export function GltfEntity({ obj }: { obj: SceneObject }) {
   const groupRef = useRef<THREE.Group>(null)
+  const shakeRef = useRef<THREE.Group>(null)
   const selectedId = useScene((s) => s.selectedId)
   const editMode = useScene((s) => s.settings.editMode)
   const gizmoMode = useScene((s) => s.gizmoMode)
   const select = useScene((s) => s.select)
   const updateObject = useScene((s) => s.updateObject)
+  const mic = useMic()
 
   const selected = selectedId === obj.id
+
+  // mic-driven shake: magnitude ∝ max(0, loudness - threshold)
+  useFrame(() => {
+    const g = shakeRef.current
+    if (!g) return
+    const s = useScene.getState().settings
+    const active = s.micEnabled && obj.shake && !s.editMode
+    if (!active) {
+      if (g.position.x || g.position.y || g.position.z || g.rotation.x) {
+        g.position.set(0, 0, 0)
+        g.rotation.set(0, 0, 0)
+      }
+      return
+    }
+    const over = Math.max(0, mic.current - s.micThreshold)
+    const amt = over * s.micGain * obj.shakeIntensity
+    const t = performance.now() * 0.001
+    const j = amt * 0.045
+    g.position.set(
+      (Math.sin(t * 97.1) + Math.sin(t * 53.3)) * 0.5 * j,
+      (Math.sin(t * 61.7) + Math.sin(t * 88.9)) * 0.5 * j,
+      (Math.sin(t * 71.3) + Math.sin(t * 43.7)) * 0.5 * j,
+    )
+    const r = amt * 0.13
+    g.rotation.set(
+      Math.sin(t * 67.2) * r,
+      Math.sin(t * 59.5) * r,
+      Math.sin(t * 73.9) * r,
+    )
+  })
 
   useEffect(() => {
     const g = groupRef.current
@@ -102,14 +135,16 @@ export function GltfEntity({ obj }: { obj: SceneObject }) {
         select(obj.id)
       }}
     >
-      {obj.url ? (
-        <Model obj={obj} onFit={handleFit} />
-      ) : (
-        <mesh>
-          <boxGeometry args={[0.1, 0.1, 0.1]} />
-          <meshStandardMaterial color="#f43f5e" wireframe />
-        </mesh>
-      )}
+      <group ref={shakeRef}>
+        {obj.url ? (
+          <Model obj={obj} onFit={handleFit} />
+        ) : (
+          <mesh>
+            <boxGeometry args={[0.1, 0.1, 0.1]} />
+            <meshStandardMaterial color="#f43f5e" wireframe />
+          </mesh>
+        )}
+      </group>
     </group>
   )
 

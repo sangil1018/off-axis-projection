@@ -19,6 +19,10 @@ export type SceneObject = {
   receiveShadow: boolean
   /** false until auto-fit (scale/recenter to a sane size) has run once */
   fitted: boolean
+  /** vibrate this model with the mic loudness (above the threshold) */
+  shake: boolean
+  /** per-model multiplier on the shake magnitude */
+  shakeIntensity: number
 }
 
 export type LibraryModel = { name: string; url: string }
@@ -72,6 +76,12 @@ export type Settings = {
   /** translucent deforming "room" grid — dev aid by default */
   showRoomGrid: boolean
   roomDepthM: number
+  // microphone-driven shake
+  micEnabled: boolean
+  /** loudness (0..1) the shake starts at */
+  micThreshold: number
+  /** global multiplier from (loudness - threshold) to shake magnitude */
+  micGain: number
   background: string
   environment: boolean
   exposure: number
@@ -132,6 +142,9 @@ export const DEFAULT_SETTINGS: Settings = {
   showGrid: true,
   showRoomGrid: import.meta.env.DEV,
   roomDepthM: 1.2,
+  micEnabled: false,
+  micThreshold: 0.12,
+  micGain: 1,
   background: '#0d1017',
   environment: true,
   exposure: 1,
@@ -174,6 +187,8 @@ function makeObject(
     castShadow: o.castShadow ?? true,
     receiveShadow: o.receiveShadow ?? true,
     fitted: o.fitted ?? false,
+    shake: o.shake ?? false,
+    shakeIntensity: o.shakeIntensity ?? 1,
   }
 }
 
@@ -288,6 +303,8 @@ export const useScene = create<SceneState>()(
             id: uid(),
             isBlob: !o.url || o.url.startsWith('blob:'),
             fitted: o.fitted ?? true,
+            shake: o.shake ?? false,
+            shakeIntensity: o.shakeIntensity ?? 1,
           })),
           lights: (d.lights ?? DEFAULT_LIGHTS).map((l) => ({ ...l, id: uid() })),
           settings: { ...DEFAULT_SETTINGS, ...(d.settings ?? {}) },

@@ -7,6 +7,7 @@ import { OffAxisCamera, WindowFrame, RoomGrid, type Viewpoint } from '../offaxis
 import { SceneObjects } from './SceneObjects'
 import { Lights } from './Lights'
 import { SceneEnvironment } from './Environment'
+import { MicContext } from './MicContext'
 
 function DemoContent() {
   const objects = useScene((s) => s.objects)
@@ -29,7 +30,13 @@ function DemoContent() {
   )
 }
 
-export function Studio({ eye }: { eye: React.MutableRefObject<Viewpoint> }) {
+export function Studio({
+  eye,
+  micLevel,
+}: {
+  eye: React.MutableRefObject<Viewpoint>
+  micLevel: React.MutableRefObject<number>
+}) {
   const settings = useScene((s) => s.settings)
   const select = useScene((s) => s.select)
 
@@ -57,31 +64,33 @@ export function Studio({ eye }: { eye: React.MutableRefObject<Viewpoint> }) {
       <ExposureSync exposure={settings.exposure} />
       {import.meta.env.DEV && <DebugBridge />}
 
-      <OffAxisCamera
-        eye={eye}
-        screen={screen}
-        near={settings.near}
-        far={settings.far}
-        enabled={!settings.editMode}
-      />
-      {settings.editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
-
-      <Lights />
-      <Suspense fallback={null}>
-        <SceneEnvironment />
-      </Suspense>
-      {settings.showFrame && (
-        <WindowFrame widthM={settings.screenWidthM} heightM={settings.screenHeightM} />
-      )}
-      {settings.showRoomGrid && (
-        <RoomGrid
-          widthM={settings.screenWidthM}
-          heightM={settings.screenHeightM}
-          depthM={settings.roomDepthM}
+      <MicContext.Provider value={micLevel}>
+        <OffAxisCamera
+          eye={eye}
+          screen={screen}
+          near={settings.near}
+          far={settings.far}
+          enabled={!settings.editMode}
         />
-      )}
-      <SceneObjects />
-      <DemoContent />
+        {settings.editMode && <OrbitControls makeDefault target={[0, 0, -0.3]} />}
+
+        <Lights />
+        <Suspense fallback={null}>
+          <SceneEnvironment />
+        </Suspense>
+        {settings.showFrame && (
+          <WindowFrame widthM={settings.screenWidthM} heightM={settings.screenHeightM} />
+        )}
+        {settings.showRoomGrid && (
+          <RoomGrid
+            widthM={settings.screenWidthM}
+            heightM={settings.screenHeightM}
+            depthM={settings.roomDepthM}
+          />
+        )}
+        <SceneObjects />
+        <DemoContent />
+      </MicContext.Provider>
     </Canvas>
   )
 }

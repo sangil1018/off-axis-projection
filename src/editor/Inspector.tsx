@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react'
 import { useScene, type LightType } from '../store/sceneStore'
+import type { MicStatus } from '../hooks/useMicLevel'
 import {
   ColorField,
   NumberField,
@@ -13,7 +15,13 @@ import {
 const LIGHT_TYPES: readonly LightType[] = ['ambient', 'directional', 'point', 'spot']
 const ASPECTS = ['fill', '16:9', '4:3', '1:1', 'custom'] as const
 
-export function Inspector() {
+export function Inspector({
+  micLevel,
+  micStatus,
+}: {
+  micLevel: React.MutableRefObject<number>
+  micStatus: MicStatus
+}) {
   const selectedId = useScene((s) => s.selectedId)
   const object = useScene((s) => s.objects.find((o) => o.id === s.selectedId))
   const light = useScene((s) => s.lights.find((l) => l.id === s.selectedId))
@@ -53,6 +61,19 @@ export function Inspector() {
           <Row label="Recv shadow">
             <Toggle value={object.receiveShadow} onChange={(v) => updateObject(object.id, { receiveShadow: v })} />
           </Row>
+          <Row label="Shake (mic)">
+            <Toggle value={object.shake} onChange={(v) => updateObject(object.id, { shake: v })} />
+          </Row>
+          {object.shake && (
+            <Row label="Shake amount">
+              <Slider
+                min={0}
+                max={4}
+                value={object.shakeIntensity}
+                onChange={(v) => updateObject(object.id, { shakeIntensity: v })}
+              />
+            </Row>
+          )}
         </Section>
       )}
 
@@ -185,6 +206,63 @@ export function Inspector() {
           <Slider min={0.02} max={1} value={settings.smoothing} onChange={(v) => set({ smoothing: v })} />
         </Row>
       </Section>
+
+      <Section title="Microphone → Shake">
+        <Row label="Mic input">
+          <Toggle value={settings.micEnabled} onChange={(v) => set({ micEnabled: v })} />
+        </Row>
+        {settings.micEnabled && (
+          <>
+            <Row label="Level">
+              <MicMeter level={micLevel} threshold={settings.micThreshold} status={micStatus} />
+            </Row>
+            <Row label="Threshold">
+              <Slider min={0} max={1} value={settings.micThreshold} onChange={(v) => set({ micThreshold: v })} />
+            </Row>
+            <Row label="Shake gain">
+              <Slider min={0} max={5} value={settings.micGain} onChange={(v) => set({ micGain: v })} />
+            </Row>
+            <div className="pt-1 text-[10px] leading-tight text-slate-500">
+              모델별 <b>Shake (mic)</b>를 켜면 임계값 초과분에 비례해 진동합니다.
+            </div>
+          </>
+        )}
+      </Section>
     </div>
+  )
+}
+
+function MicMeter({
+  level,
+  threshold,
+  status,
+}: {
+  level: React.MutableRefObject<number>
+  threshold: number
+  status: MicStatus
+}) {
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let raf = 0
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      const el = barRef.current
+      if (el) el.style.width = `${Math.min(100, level.current * 100).toFixed(1)}%`
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
+  }, [level])
+  return (
+    <span className="relative block h-3 w-full overflow-hidden rounded bg-slate-800">
+      <span
+        ref={barRef}
+        className={`absolute inset-y-0 left-0 ${status === 'error' ? 'bg-rose-500' : 'bg-emerald-500'}`}
+        style={{ width: '0%' }}
+      />
+      <span
+        className="absolute inset-y-0 w-px bg-amber-400"
+        style={{ left: `${Math.min(100, threshold * 100)}%` }}
+      />
+    </span>
   )
 }

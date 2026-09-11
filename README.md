@@ -52,6 +52,9 @@ const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
 - **뷰 공간 룸 그리드**: 화면 평면을 앞면으로 하는 반투명 그리드 박스(바닥·천장·좌우·
   뒷벽). 시점이 움직이면 원근이 함께 변형됨. 개발 빌드 기본 ON / 프로덕션 기본 OFF,
   Inspector `Room grid (dev)` 토글 + 깊이 슬라이더.
+- **마이크 → 셰이크**: Inspector `Microphone → Shake` 에서 마이크 입력 ON + 임계값·
+  게인 설정. 모델별 `Shake (mic)` 를 켜면 마이크 음량이 **임계값을 넘는 만큼에 비례해**
+  해당 모델이 진동(위치+회전). 마이크 거부 시 자동 OFF.
 - **환경광(IBL)**: Lightformer 기반 절차적 스튜디오 환경맵 — 외부 HDR 다운로드 없이
   오프라인에서 동작.
 - **저장**: localStorage 자동 저장 + JSON export / import. (드롭한 GLB는 blob이라

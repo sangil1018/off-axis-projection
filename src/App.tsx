@@ -6,6 +6,7 @@ import { Inspector } from './editor/Inspector'
 import { DropZone } from './editor/DropZone'
 import { CalibrationWizard } from './components/CalibrationWizard'
 import { useFittedSize } from './hooks/useFittedSize'
+import { useMicLevel } from './hooks/useMicLevel'
 import { useViewpoint, TrackerPreview } from './offaxis'
 
 function aspectRatioOf(mode: string, custom: number): number | null {
@@ -48,8 +49,14 @@ export default function App() {
     onFallback: () => updateSettings({ headSource: 'mouse' }),
   })
 
+  const { level: micLevel, status: micStatus } = useMicLevel(
+    settings.micEnabled,
+    () => updateSettings({ micEnabled: false }),
+  )
+
   if (import.meta.env.DEV) {
-    ;(window as unknown as { __head?: unknown }).__head = viewpoint
+    ;(window as unknown as { __head?: unknown; __mic?: unknown }).__head = viewpoint
+    ;(window as unknown as { __mic?: unknown }).__mic = micLevel
   }
 
   return (
@@ -63,7 +70,7 @@ export default function App() {
               className="relative overflow-hidden rounded"
               style={{ width: size.width, height: size.height }}
             >
-              {size.width > 0 && <Studio eye={viewpoint} />}
+              {size.width > 0 && <Studio eye={viewpoint} micLevel={micLevel} />}
               {settings.headSource !== 'mouse' && (
                 <TrackerPreview
                   source={settings.headSource}
@@ -77,7 +84,7 @@ export default function App() {
             </div>
           </div>
         </DropZone>
-        <Inspector />
+        <Inspector micLevel={micLevel} micStatus={micStatus} />
       </div>
       {calibrating && <CalibrationWizard onClose={() => setCalibrating(false)} />}
     </div>
