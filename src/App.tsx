@@ -62,7 +62,7 @@ export default function App() {
   return (
     <div className="flex h-full w-full flex-col">
       <Toolbar />
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <Outliner />
         <DropZone>
           <div ref={ref} className="flex h-full w-full items-center justify-center overflow-hidden bg-black">

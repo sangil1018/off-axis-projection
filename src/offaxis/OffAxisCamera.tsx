@@ -53,7 +53,9 @@ export function OffAxisCamera({
     camera.updateMatrixWorld()
     camera.projectionMatrix.copy(result.projection)
     camera.projectionMatrixInverse.copy(result.projection).invert()
-  }, 1)
+    // priority -1: run before the render (and before any EffectComposer pass)
+    // without taking over the render loop
+  }, -1)
 
   return null
 }

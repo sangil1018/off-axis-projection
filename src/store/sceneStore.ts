@@ -96,11 +96,17 @@ type SceneState = {
   lights: SceneLight[]
   settings: Settings
   selectedId: string | null
+  hoveredId: string | null
   gizmoMode: GizmoMode
   calibrating: boolean
+  inspectorOpen: boolean
+  inspectorOpacity: number
 
   setCalibrating: (v: boolean) => void
+  setInspectorOpen: (v: boolean) => void
+  setInspectorOpacity: (v: number) => void
   select: (id: string | null) => void
+  setHovered: (id: string | null) => void
   setGizmoMode: (m: GizmoMode) => void
 
   addObject: (o: Partial<SceneObject> & { url: string; fileName: string; isBlob: boolean }) => string
@@ -213,11 +219,17 @@ export const useScene = create<SceneState>()(
       lights: DEFAULT_LIGHTS,
       settings: DEFAULT_SETTINGS,
       selectedId: null,
+      hoveredId: null,
       gizmoMode: 'translate',
       calibrating: false,
+      inspectorOpen: false,
+      inspectorOpacity: 0.9,
 
       setCalibrating: (calibrating) => set({ calibrating }),
+      setInspectorOpen: (inspectorOpen) => set({ inspectorOpen }),
+      setInspectorOpacity: (inspectorOpacity) => set({ inspectorOpacity }),
       select: (id) => set({ selectedId: id }),
+      setHovered: (hoveredId) => set({ hoveredId }),
       setGizmoMode: (gizmoMode) => set({ gizmoMode }),
 
       addObject: (o) => {
@@ -329,6 +341,8 @@ export const useScene = create<SceneState>()(
         lights: s.lights,
         settings: s.settings,
         gizmoMode: s.gizmoMode,
+        inspectorOpen: s.inspectorOpen,
+        inspectorOpacity: s.inspectorOpacity,
       }),
     },
   ),

@@ -45,6 +45,11 @@ const { viewpoint, status, message, videoRef, visualRef } = useViewpoint({
   (디코더는 `public/decoders/` 에 로컬 번들 — 오프라인 동작).
 - **캘리브레이션**: 툴바 `Calibrate` → 모니터 대각선(inch)+화면비 또는 가로·세로(mm),
   시청 거리(cm) 입력 → off-axis 절두체가 물리적으로 정확해짐.
+- **선택 UX**: 오브젝트 호버 시 옅은 와이어박스, 선택 시 굵은 시안 테두리(항상 위에
+  표시) + 뷰 안의 이동/회전/크기 매니퓰레이터(Preview·Edit 모드 공통). 드래그 값은
+  Inspector와 양방향 연동.
+- **Inspector**: 기본 접힘(⚙ 버튼) → 열면 우측 반투명 오버레이. 헤더의 투명도
+  슬라이더로 패널 투명도 조절.
 - **라이트**: ambient / directional / point / spot 추가·삭제, 색·강도·위치·그림자·
   스팟 각도/penumbra 등 제어. 선택 시 헬퍼 표시.
 - **해상도 / 비율**: resolution scale(0.25–2), aspect(fill·16:9·4:3·1:1·custom),
