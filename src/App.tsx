@@ -104,10 +104,10 @@ export default function App() {
         {size.width > 0 && (
           <ErrorBoundary
             fallback={(err, retry) => (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-ink p-6 text-center">
                 <p className="text-sm font-medium text-rose-300">3D 뷰 렌더 중 오류가 발생했습니다</p>
-                <p className="max-w-sm text-xs text-slate-400">{err.message}</p>
-                <button className="rounded bg-sky-600 px-3 py-1.5 text-xs font-medium" onClick={retry}>
+                <p className="max-w-sm text-xs text-muted">{err.message}</p>
+                <button className="rounded-sm bg-accent px-3 py-1.5 text-xs font-medium text-ink" onClick={retry}>
                   다시 시도
                 </button>
               </div>
@@ -132,7 +132,7 @@ export default function App() {
           type="button"
           onClick={toggleFullscreen}
           title={isFullscreen ? '전체화면 종료' : '전체화면'}
-          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded bg-black/40 text-slate-200 opacity-60 backdrop-blur transition hover:opacity-100"
+          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-sm bg-black/40 text-fg opacity-60 backdrop-blur transition hover:text-accent hover:opacity-100"
         >
           {isFullscreen ? (
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>

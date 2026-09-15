@@ -4,7 +4,7 @@ import type { Vec3 } from '../store/sceneStore'
 export function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="flex items-center gap-2 py-1 text-xs">
-      <span className="w-24 shrink-0 text-slate-400">{label}</span>
+      <span className="w-24 shrink-0 text-muted">{label}</span>
       <span className="flex flex-1 items-center gap-1">{children}</span>
     </label>
   )
@@ -26,7 +26,7 @@ export function NumberField({
   return (
     <input
       type="number"
-      className="w-full rounded bg-slate-800 px-1.5 py-1 text-xs outline-none focus:ring-1 focus:ring-sky-500"
+      className="w-full rounded-sm border border-line bg-panel2 px-1.5 py-1 text-xs text-fg outline-none focus:border-accent focus:ring-1 focus:ring-accent"
       value={Number.isFinite(value) ? +value.toFixed(4) : 0}
       step={step}
       min={min}
@@ -53,16 +53,14 @@ export function Slider({
     <span className="flex flex-1 items-center gap-2">
       <input
         type="range"
-        className="flex-1 accent-sky-500"
+        className="flex-1 accent-accent"
         value={value}
         min={min}
         max={max}
         step={step}
         onChange={(e) => onChange(parseFloat(e.target.value))}
       />
-      <span className="w-10 text-right tabular-nums text-slate-300">
-        {value.toFixed(2)}
-      </span>
+      <span className="w-10 text-right tabular-nums text-muted">{value.toFixed(2)}</span>
     </span>
   )
 }
@@ -88,7 +86,7 @@ export function NumberSlider({
     <span className="flex flex-1 items-center gap-2">
       <input
         type="range"
-        className="flex-1 accent-sky-500"
+        className="flex-1 accent-accent"
         value={Number.isFinite(value) ? value : min}
         min={min}
         max={max}
@@ -97,7 +95,7 @@ export function NumberSlider({
       />
       <input
         type="number"
-        className="w-16 shrink-0 rounded bg-slate-800 px-1.5 py-1 text-right text-xs outline-none focus:ring-1 focus:ring-sky-500"
+        className="w-16 shrink-0 rounded-sm border border-line bg-panel2 px-1.5 py-1 text-right text-xs text-fg outline-none focus:border-accent focus:ring-1 focus:ring-accent"
         value={Number.isFinite(value) ? +value.toFixed(decimals) : 0}
         min={min}
         max={max}
@@ -127,7 +125,7 @@ export function Vec3Field({
           key={axis}
           type="number"
           step={step}
-          className="w-full rounded bg-slate-800 px-1 py-1 text-xs outline-none focus:ring-1 focus:ring-sky-500"
+          className="w-full rounded-sm border border-line bg-panel2 px-1 py-1 text-xs text-fg outline-none focus:border-accent focus:ring-1 focus:ring-accent"
           value={+value[i].toFixed(4)}
           onChange={(e) => {
             const next = [...value] as Vec3
@@ -150,7 +148,7 @@ export function ColorField({
   return (
     <input
       type="color"
-      className="h-6 w-10 rounded bg-transparent"
+      className="h-6 w-10 rounded-sm border border-line bg-transparent"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -167,7 +165,7 @@ export function Toggle({
   return (
     <input
       type="checkbox"
-      className="h-4 w-4 accent-sky-500"
+      className="h-4 w-4 accent-accent"
       checked={value}
       onChange={(e) => onChange(e.target.checked)}
     />
@@ -185,7 +183,7 @@ export function Select<T extends string>({
 }) {
   return (
     <select
-      className="w-full rounded bg-slate-800 px-1.5 py-1 text-xs outline-none focus:ring-1 focus:ring-sky-500"
+      className="w-full rounded-sm border border-line bg-panel2 px-1.5 py-1 text-xs text-fg outline-none focus:border-accent focus:ring-1 focus:ring-accent"
       value={value}
       onChange={(e) => onChange(e.target.value as T)}
     >
@@ -200,9 +198,10 @@ export function Select<T extends string>({
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border-b border-slate-800 px-3 py-2">
-      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-        {title}
+    <div className="border-b border-line px-3 py-2">
+      <div className="mb-1.5 flex items-center gap-1.5">
+        <span className="h-2.5 w-[3px] bg-accent" />
+        <span className="text-[11px] font-medium text-muted">{title}</span>
       </div>
       {children}
     </div>

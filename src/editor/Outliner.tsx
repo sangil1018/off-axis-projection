@@ -12,13 +12,14 @@ export function Outliner() {
   const updateLight = useScene((s) => s.updateLight)
 
   return (
-    <div className="flex w-56 shrink-0 flex-col border-r border-slate-800 bg-slate-900/80 text-xs backdrop-blur">
-      <div className="border-b border-slate-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+    <div className="flex w-56 shrink-0 flex-col border-r border-line bg-panel/80 text-xs backdrop-blur">
+      <div className="flex items-center gap-1.5 border-b border-line px-3 py-2 text-[11px] font-medium text-muted">
+        <span className="h-2.5 w-[3px] bg-accent" />
         Objects ({objects.length})
       </div>
       <div className="max-h-56 overflow-y-auto">
         {objects.length === 0 && (
-          <div className="px-3 py-2 text-slate-600">GLB 파일을 드래그드롭</div>
+          <div className="px-3 py-2 text-muted">GLB 파일을 드래그드롭</div>
         )}
         {objects.map((o) => (
           <Item
@@ -40,7 +41,8 @@ export function Outliner() {
           />
         ))}
       </div>
-      <div className="border-y border-slate-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+      <div className="flex items-center gap-1.5 border-y border-line px-3 py-2 text-[11px] font-medium text-muted">
+        <span className="h-2.5 w-[3px] bg-accent" />
         Lights ({lights.length})
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -79,12 +81,12 @@ function Item({
 }) {
   return (
     <div
-      className={`group flex items-center gap-1 px-2 py-1 ${
-        active ? 'bg-sky-600/30 text-sky-200' : 'hover:bg-slate-800/60'
+      className={`group flex items-center gap-1 border-l-2 px-2 py-1 ${
+        active ? 'border-accent bg-panel2 text-fg' : 'border-transparent hover:bg-panel2/60'
       }`}
     >
       <button
-        className="w-5 text-center text-slate-500 hover:text-slate-200"
+        className="w-5 text-center text-muted hover:text-fg"
         onClick={onToggle}
         title="표시 토글"
       >

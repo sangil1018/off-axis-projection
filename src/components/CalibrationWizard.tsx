@@ -48,25 +48,32 @@ export function CalibrationWizard({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
       <div
-        className="w-96 rounded-lg border border-slate-700 bg-slate-900 p-4 text-sm shadow-2xl"
+        className="w-96 rounded-sm border border-line bg-panel p-4 text-sm text-fg shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-3 text-base font-semibold text-sky-300">스크린 캘리브레이션</div>
-        <p className="mb-3 text-xs text-slate-400">
+        <div className="mb-3 flex items-center gap-2 text-base font-semibold">
+          <span className="h-3 w-[3px] bg-accent" />
+          스크린 캘리브레이션
+        </div>
+        <p className="mb-3 text-xs text-muted">
           모니터의 실제 크기와 시청 거리를 입력하면 off-axis 원근이 물리적으로 정확해집니다.
         </p>
 
         <div className="mb-3 flex gap-2 text-xs">
           <button
-            className={`rounded px-2 py-1 ${mode === 'diagonal' ? 'bg-sky-600' : 'bg-slate-800'}`}
+            className={`rounded-sm px-2 py-1 ${
+              mode === 'diagonal' ? 'bg-accent text-ink' : 'border border-line bg-panel2'
+            }`}
             onClick={() => setMode('diagonal')}
           >
             대각선 인치
           </button>
           <button
-            className={`rounded px-2 py-1 ${mode === 'manual' ? 'bg-sky-600' : 'bg-slate-800'}`}
+            className={`rounded-sm px-2 py-1 ${
+              mode === 'manual' ? 'bg-accent text-ink' : 'border border-line bg-panel2'
+            }`}
             onClick={() => setMode('manual')}
           >
             가로·세로 직접
@@ -103,17 +110,23 @@ export function CalibrationWizard({ onClose }: { onClose: () => void }) {
           </Field>
         </div>
 
-        <div className="mt-3 rounded bg-slate-800/70 px-3 py-2 text-xs text-slate-300">
-          계산된 스크린: <b>{(w * 100).toFixed(1)} × {(h * 100).toFixed(1)} cm</b>
-          <br />
-          거리: <b>{distCm} cm</b>
+        <div className="mt-3 space-y-0.5 rounded-sm border border-line bg-panel2 px-3 py-2 text-xs text-muted">
+          <div>
+            계산된 스크린:{' '}
+            <b className="tabular-nums text-fg">
+              {(w * 100).toFixed(1)} × {(h * 100).toFixed(1)} cm
+            </b>
+          </div>
+          <div>
+            거리: <b className="tabular-nums text-fg">{distCm} cm</b>
+          </div>
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <button className="rounded bg-slate-700 px-3 py-1.5" onClick={onClose}>
+          <button className="rounded-sm border border-line px-3 py-1.5 text-muted hover:text-fg" onClick={onClose}>
             취소
           </button>
-          <button className="rounded bg-sky-600 px-3 py-1.5 font-medium" onClick={apply}>
+          <button className="rounded-sm bg-accent px-3 py-1.5 font-medium text-ink" onClick={apply}>
             적용
           </button>
         </div>
@@ -125,7 +138,7 @@ export function CalibrationWizard({ onClose }: { onClose: () => void }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex items-center gap-2">
-      <span className="w-28 shrink-0 text-xs text-slate-400">{label}</span>
+      <span className="w-28 shrink-0 text-xs text-muted">{label}</span>
       {children}
     </label>
   )

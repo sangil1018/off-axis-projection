@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import { useScene, type LightType, MODEL_LIBRARY } from '../store/sceneStore'
 
+const btn = 'rounded-sm border border-line bg-panel2 px-2 py-1 text-fg hover:border-accent'
+
 export function Toolbar() {
   const gizmoMode = useScene((s) => s.gizmoMode)
   const setGizmoMode = useScene((s) => s.setGizmoMode)
@@ -38,13 +40,16 @@ export function Toolbar() {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 bg-slate-900/90 px-3 py-2 text-xs backdrop-blur">
-      <span className="font-semibold text-sky-300">Off-Axis Studio</span>
+    <div className="flex flex-wrap items-center gap-2 border-b border-line bg-panel px-3 py-2 text-xs backdrop-blur">
+      <span className="flex items-center gap-1.5 font-semibold text-fg">
+        <span className="h-2.5 w-[3px] bg-accent" />
+        Off-Axis Studio
+      </span>
 
-      <div className="mx-2 h-4 w-px bg-slate-700" />
+      <div className="mx-2 h-4 w-px bg-line" />
 
       <button
-        className={`rounded px-2 py-1 ${editMode ? 'bg-amber-500 text-black' : 'bg-slate-800 hover:bg-slate-700'}`}
+        className={editMode ? 'rounded-sm bg-accent px-2 py-1 text-ink' : btn}
         onClick={() => set({ editMode: !editMode })}
         title="편집 모드 (OrbitControls). 끄면 off-axis 프리뷰"
       >
@@ -54,18 +59,18 @@ export function Toolbar() {
       {(['translate', 'rotate', 'scale'] as const).map((m) => (
         <button
           key={m}
-          className={`rounded px-2 py-1 ${gizmoMode === m ? 'bg-sky-600' : 'bg-slate-800 hover:bg-slate-700'}`}
+          className={`rounded-sm px-2 py-1 ${gizmoMode === m ? 'bg-accent text-ink' : btn}`}
           onClick={() => setGizmoMode(m)}
         >
           {m[0].toUpperCase()}
         </button>
       ))}
 
-      <div className="mx-2 h-4 w-px bg-slate-700" />
+      <div className="mx-2 h-4 w-px bg-line" />
 
-      <span className="text-slate-500">+ Model:</span>
+      <span className="text-muted">+ Model:</span>
       <select
-        className="rounded bg-slate-800 px-1.5 py-1 outline-none"
+        className={btn}
         value=""
         onChange={(e) => {
           const m = MODEL_LIBRARY.find((x) => x.name === e.target.value)
@@ -80,16 +85,13 @@ export function Toolbar() {
           </option>
         ))}
       </select>
-      <button
-        className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700"
-        onClick={() => setUrlOpen((v) => !v)}
-      >
+      <button className={btn} onClick={() => setUrlOpen((v) => !v)}>
         URL…
       </button>
       {urlOpen && (
         <span className="flex items-center gap-1">
           <input
-            className="w-56 rounded bg-slate-800 px-1.5 py-1 outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-56 rounded-sm border border-line bg-panel2 px-1.5 py-1 text-fg outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             placeholder="https://…/model.glb"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -102,7 +104,7 @@ export function Toolbar() {
             }}
           />
           <button
-            className="rounded bg-sky-600 px-2 py-1"
+            className="rounded-sm bg-accent px-2 py-1 text-ink"
             onClick={() => {
               if (url.trim()) {
                 addFromUrl(url.trim())
@@ -116,22 +118,18 @@ export function Toolbar() {
         </span>
       )}
 
-      <div className="mx-2 h-4 w-px bg-slate-700" />
+      <div className="mx-2 h-4 w-px bg-line" />
 
-      <span className="text-slate-500">+ Light:</span>
+      <span className="text-muted">+ Light:</span>
       {(['ambient', 'directional', 'point', 'spot'] as LightType[]).map((t) => (
-        <button
-          key={t}
-          className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700"
-          onClick={() => addLight(t)}
-        >
+        <button key={t} className={btn} onClick={() => addLight(t)}>
           {t}
         </button>
       ))}
 
       <div className="ml-auto flex items-center gap-2">
         <button
-          className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700"
+          className={btn}
           onClick={() => {
             const url = new URL(window.location.href)
             url.searchParams.set('viewer', '1')
@@ -141,16 +139,19 @@ export function Toolbar() {
         >
           🔗 뷰어로 새 창에서 열기
         </button>
-        <button className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700" onClick={() => setCalibrating(true)}>
+        <button className={btn} onClick={() => setCalibrating(true)}>
           Calibrate
         </button>
-        <button className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700" onClick={exportScene}>
+        <button className={btn} onClick={exportScene}>
           Export
         </button>
-        <button className="rounded bg-slate-800 px-2 py-1 hover:bg-slate-700" onClick={() => fileRef.current?.click()}>
+        <button className={btn} onClick={() => fileRef.current?.click()}>
           Import
         </button>
-        <button className="rounded bg-rose-900/70 px-2 py-1 hover:bg-rose-800" onClick={() => confirm('씬을 초기화할까요?') && reset()}>
+        <button
+          className="rounded-sm border border-line px-2 py-1 text-muted hover:border-accent hover:text-accent"
+          onClick={() => confirm('씬을 초기화할까요?') && reset()}
+        >
           Reset
         </button>
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onImport} />

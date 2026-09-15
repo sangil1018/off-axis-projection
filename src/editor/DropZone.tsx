@@ -45,7 +45,7 @@ export function DropZone({ children }: { children: React.ReactNode }) {
     >
       {children}
       {over && (
-        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center border-4 border-dashed border-sky-400/70 bg-sky-500/10 text-lg font-semibold text-sky-200">
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center border-4 border-dashed border-accent/70 bg-accent/10 text-lg font-semibold text-fg">
           glTF / GLB 파일 놓기
         </div>
       )}

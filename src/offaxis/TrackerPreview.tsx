@@ -173,7 +173,7 @@ export function TrackerPreview({
     <div
       className={
         className ??
-        'pointer-events-auto absolute bottom-3 left-3 z-20 w-44 overflow-hidden rounded-lg border border-slate-700 bg-slate-900/90 text-xs shadow-lg backdrop-blur'
+        'pointer-events-auto absolute bottom-3 left-3 z-20 w-44 overflow-hidden rounded-sm border border-[#252b34] bg-[#12161c]/90 text-xs shadow-lg backdrop-blur'
       }
     >
       <div ref={holderRef} className="relative aspect-video w-full bg-black">
@@ -186,19 +186,19 @@ export function TrackerPreview({
         />
         <span className="flex-1 truncate">{label(status, source)}</span>
         {status === 'error' && onUsePointer && (
-          <button className="rounded bg-sky-600 px-1.5 py-0.5" onClick={onUsePointer}>
+          <button className="rounded-sm bg-[#d8532f] px-1.5 py-0.5 text-[#0a0c0f]" onClick={onUsePointer}>
             마우스로
           </button>
         )}
       </div>
       {message && (
-        <div className="px-2 pb-1.5 text-[10px] leading-tight text-slate-400">
+        <div className="px-2 pb-1.5 text-[10px] leading-tight text-[#7d8794]">
           {message}
         </div>
       )}
       {onSelectDevice && devices.length > 1 && (
         <select
-          className="w-full truncate border-t border-slate-700 bg-slate-800 px-2 py-1 text-[10px] text-slate-200 outline-none"
+          className="w-full truncate border-t border-[#252b34] bg-[#1a1f27] px-2 py-1 text-[10px] text-[#dde2e8] outline-none"
           value={deviceId ?? ''}
           onChange={(e) => onSelectDevice(e.target.value || null)}
           title="사용할 카메라 선택"

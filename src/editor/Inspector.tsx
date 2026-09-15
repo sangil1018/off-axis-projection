@@ -28,7 +28,7 @@ export function Inspector(props: {
   if (!open) {
     return (
       <button
-        className="absolute right-3 top-3 z-30 rounded-md border border-slate-700 bg-slate-900/90 px-3 py-1.5 text-xs font-medium text-slate-200 shadow-lg backdrop-blur hover:bg-slate-800"
+        className="absolute right-3 top-3 z-30 rounded-sm border border-line bg-panel/90 px-3 py-1.5 text-xs font-medium text-fg shadow-lg backdrop-blur hover:border-accent"
         onClick={() => setOpen(true)}
       >
         ⚙ Inspector
@@ -38,16 +38,19 @@ export function Inspector(props: {
 
   return (
     <div
-      className="absolute right-0 top-0 z-30 flex h-full w-80 flex-col border-l border-slate-700 shadow-2xl backdrop-blur"
-      style={{ backgroundColor: `rgba(15, 23, 42, ${opacity})` }}
+      className="absolute right-0 top-0 z-30 flex h-full w-80 flex-col border-l border-line shadow-2xl backdrop-blur"
+      style={{ backgroundColor: `rgba(18, 22, 28, ${opacity})` }}
     >
-      <div className="flex items-center gap-2 border-b border-slate-700/70 px-3 py-2">
-        <span className="text-xs font-semibold text-sky-300">Inspector</span>
-        <span className="ml-auto flex items-center gap-1 text-[10px] text-slate-400">
+      <div className="flex items-center gap-2 border-b border-line px-3 py-2">
+        <span className="flex items-center gap-1.5 text-xs font-semibold text-fg">
+          <span className="h-2.5 w-[3px] bg-accent" />
+          Inspector
+        </span>
+        <span className="ml-auto flex items-center gap-1 text-[10px] text-muted">
           투명도
           <input
             type="range"
-            className="w-20 accent-sky-500"
+            className="w-20 accent-accent"
             min={0.15}
             max={1}
             step={0.05}
@@ -56,7 +59,7 @@ export function Inspector(props: {
           />
         </span>
         <button
-          className="rounded px-1.5 text-slate-400 hover:bg-slate-700 hover:text-slate-100"
+          className="rounded-sm px-1.5 text-muted hover:bg-panel2 hover:text-fg"
           onClick={() => setOpen(false)}
           title="닫기"
         >
@@ -177,7 +180,7 @@ function InspectorBody({
       )}
 
       {!selectedId && (
-        <div className="px-3 py-3 text-xs text-slate-600">
+        <div className="px-3 py-3 text-xs text-muted">
           Outliner에서 오브젝트나 라이트를 선택하세요.
         </div>
       )}
@@ -241,7 +244,7 @@ function InspectorBody({
         <Row label="Far">
           <NumberSlider min={1} max={300} step={1} decimals={0} value={settings.far} onChange={(v) => set({ far: v })} />
         </Row>
-        <div className="pt-1 text-[10px] leading-tight text-slate-500">
+        <div className="pt-1 text-[10px] leading-tight text-muted">
           Edit FOV은 Edit 모드(오빗 카메라) 화각만 조절합니다 — Preview의 off-axis
           원근은 화면 크기·거리로 계산되어 영향받지 않습니다.
         </div>
@@ -284,7 +287,7 @@ function InspectorBody({
             <Row label="Shake gain">
               <Slider min={0} max={5} value={settings.micGain} onChange={(v) => set({ micGain: v })} />
             </Row>
-            <div className="pt-1 text-[10px] leading-tight text-slate-500">
+            <div className="pt-1 text-[10px] leading-tight text-muted">
               모델별 <b>Shake (mic)</b>를 켜면 임계값 초과분에 비례해 진동합니다.
             </div>
           </>
@@ -315,7 +318,7 @@ function MicMeter({
     return () => cancelAnimationFrame(raf)
   }, [level])
   return (
-    <span className="relative block h-3 w-full overflow-hidden rounded bg-slate-800">
+    <span className="relative block h-3 w-full overflow-hidden rounded bg-panel2">
       <span
         ref={barRef}
         className={`absolute inset-y-0 left-0 ${status === 'error' ? 'bg-rose-500' : 'bg-emerald-500'}`}
