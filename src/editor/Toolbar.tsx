@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useScene, type LightType, MODEL_LIBRARY } from '../store/sceneStore'
+import { UI_THEMES } from '../store/uiThemes'
 
 const btn = 'rounded-sm border border-line bg-panel2 px-2 py-1 text-fg hover:border-accent'
 
@@ -7,6 +8,7 @@ export function Toolbar() {
   const gizmoMode = useScene((s) => s.gizmoMode)
   const setGizmoMode = useScene((s) => s.setGizmoMode)
   const editMode = useScene((s) => s.settings.editMode)
+  const uiTheme = useScene((s) => s.settings.uiTheme)
   const set = useScene((s) => s.updateSettings)
   const addLight = useScene((s) => s.addLight)
   const addLibraryModel = useScene((s) => s.addLibraryModel)
@@ -128,6 +130,19 @@ export function Toolbar() {
       ))}
 
       <div className="ml-auto flex items-center gap-2">
+        <span className="flex items-center gap-1 rounded-sm border border-line px-1.5 py-1">
+          {UI_THEMES.map((t) => (
+            <button
+              key={t.id}
+              className={`h-4 w-4 rounded-full ${
+                uiTheme === t.id ? 'ring-2 ring-fg ring-offset-1 ring-offset-panel' : ''
+              }`}
+              style={{ background: t.swatch }}
+              onClick={() => set({ uiTheme: t.id })}
+              title={t.label}
+            />
+          ))}
+        </span>
         <button
           className={btn}
           onClick={() => {

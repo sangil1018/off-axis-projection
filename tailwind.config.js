@@ -1,23 +1,25 @@
 /** @type {import('tailwindcss').Config} */
+function themeColor(name) {
+  return `rgb(var(--${name}) / <alpha-value>)`
+}
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      // A calibration-instrument palette, not a generic dashboard one: a
-      // near-black optical-bench body, hairline dividers instead of card
-      // borders, and one accent — the red-orange of a rangefinder's index
-      // mark — reserved for the thing you're actively pointing at
-      // (selection, focus, the Calibrate action).
+      // Backed by CSS custom properties (see src/index.css) instead of fixed
+      // hex values, so a `data-ui-theme` attribute can swap the whole
+      // palette at runtime — see src/store/uiThemes.ts for the presets.
       colors: {
-        ink: '#0a0c0f',
-        panel: '#12161c',
-        panel2: '#1a1f27',
-        line: '#252b34',
-        fg: '#dde2e8',
-        muted: '#7d8794',
+        ink: themeColor('ink'),
+        panel: themeColor('panel'),
+        panel2: themeColor('panel2'),
+        line: themeColor('line'),
+        fg: themeColor('fg'),
+        muted: themeColor('muted'),
         accent: {
-          DEFAULT: '#d8532f',
-          dim: '#5c2c1d',
+          DEFAULT: themeColor('accent'),
+          dim: themeColor('accent-dim'),
         },
       },
       fontFamily: {

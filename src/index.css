@@ -2,6 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Color themes: every semantic token (ink/panel/.../accent) is an "R G B"
+ * triplet CSS variable, referenced by tailwind.config.js as
+ * `rgb(var(--x) / <alpha-value>)`. Swapping the whole UI palette at runtime
+ * is then just setting `data-ui-theme` on <html> — see src/store/uiThemes.ts
+ * for the names/labels these keys have to match.
+ *
+ * Only the accent varies between themes on purpose (see uiThemes.ts) — the
+ * neutral base stays identical so every theme is still "this app", just
+ * pointed at a different indicator color.
+ */
+:root {
+  --ink: 10 12 15;
+  --panel: 18 22 28;
+  --panel2: 26 31 39;
+  --line: 37 43 52;
+  --fg: 221 226 232;
+  --muted: 125 135 148;
+  --accent: 216 83 47;
+  --accent-dim: 92 44 29;
+}
+
+:root[data-ui-theme='cyan'] {
+  --accent: 56 189 248;
+  --accent-dim: 28 74 92;
+}
+
+:root[data-ui-theme='brass'] {
+  --accent: 202 160 73;
+  --accent-dim: 74 60 31;
+}
+
+:root[data-ui-theme='phosphor'] {
+  --accent: 87 199 133;
+  --accent-dim: 31 61 44;
+}
+
 @layer components {
   .fld {
     @apply flex-1 rounded-sm border border-line bg-panel2 px-2 py-1 text-xs text-fg outline-none
@@ -12,8 +49,8 @@
 html, body, #root {
   height: 100%;
   margin: 0;
-  background: theme('colors.ink');
-  color: theme('colors.fg');
+  background: rgb(var(--ink));
+  color: rgb(var(--fg));
   font-family: theme('fontFamily.sans');
   overflow: hidden;
 }

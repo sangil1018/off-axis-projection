@@ -1,4 +1,5 @@
 import type { LightType, SceneLight, SceneObject, Settings, Vec3 } from './sceneStore'
+import { UI_THEMES } from './uiThemes'
 
 /**
  * Sanitizes an untrusted parsed-JSON scene file before it ever reaches
@@ -16,6 +17,7 @@ const SUPPORTED_VERSION = 1
 
 const LIGHT_TYPES: readonly LightType[] = ['ambient', 'directional', 'point', 'spot']
 const ASPECT_MODES = ['fill', '16:9', '4:3', '1:1', 'custom'] as const
+const UI_THEME_IDS = UI_THEMES.map((t) => t.id)
 
 // relative paths, same-origin absolute paths, http(s), blob:, and data: URIs
 // (GLTFLoader can consume all of these) — never javascript:, file:, vbscript:
@@ -140,6 +142,7 @@ export function sanitizeSettings(raw: unknown, defaults: Settings): Settings {
     exposure: num(r.exposure, 0.05, 10, defaults.exposure),
     shadows: bool(r.shadows, defaults.shadows),
     editMode: false, // a file shouldn't be able to switch the view mode
+    uiTheme: oneOf(r.uiTheme, UI_THEME_IDS, defaults.uiTheme),
   }
 }
 

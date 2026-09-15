@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useScene } from './store/sceneStore'
 import { Studio } from './scene/Studio'
@@ -47,6 +47,7 @@ export default function App() {
     smoothing,
     micEnabled,
     editMode,
+    uiTheme,
   } = useScene(
     useShallow((s) => ({
       aspectMode: s.settings.aspectMode,
@@ -62,6 +63,7 @@ export default function App() {
       smoothing: s.settings.smoothing,
       micEnabled: s.settings.micEnabled,
       editMode: s.settings.editMode,
+      uiTheme: s.settings.uiTheme,
     })),
   )
   const updateSettings = useScene((s) => s.updateSettings)
@@ -70,6 +72,13 @@ export default function App() {
 
   // the edit-mode orbit view only exists in the editor build
   const editModeActive = EDITOR_ENABLED && editMode
+
+  // purely cosmetic — swaps the editor chrome's accent color (see
+  // src/index.css's [data-ui-theme] blocks); has no effect on the rendered
+  // scene, so it's harmless to apply even in a production viewer build
+  useEffect(() => {
+    document.documentElement.dataset.uiTheme = uiTheme
+  }, [uiTheme])
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(viewportRef)

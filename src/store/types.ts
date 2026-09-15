@@ -1,4 +1,5 @@
 /** Domain types shared by every store slice. No slice-specific logic here. */
+import type { UiTheme } from './uiThemes'
 
 export type Vec3 = [number, number, number]
 
@@ -93,6 +94,8 @@ export type Settings = {
   exposure: number
   shadows: boolean
   editMode: boolean
+  /** editor UI accent color — purely cosmetic, no effect on the rendered scene */
+  uiTheme: UiTheme
 }
 
 export type GizmoMode = 'translate' | 'rotate' | 'scale'

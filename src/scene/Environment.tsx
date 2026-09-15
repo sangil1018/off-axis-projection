@@ -1,7 +1,6 @@
 import { Grid, Environment as DreiEnvironment, Lightformer, Line } from '@react-three/drei'
 import { useScene } from '../store/sceneStore'
 
-const GRID_Y = -0.25
 const GRID_Z = -0.3
 const GRID_HALF_EXTENT = 5 // metres — matches Blender's default viewport grid scale
 
@@ -22,8 +21,8 @@ function ProceduralIBL() {
 }
 
 /** Blender-style colored origin lines: red along X, green along the depth axis. */
-function GridAxes() {
-  const y = GRID_Y + 0.0005 // nudge above the grid plane to avoid z-fighting
+function GridAxes({ floorY }: { floorY: number }) {
+  const y = floorY + 0.0005 // nudge above the grid plane to avoid z-fighting
   return (
     <>
       <Line
@@ -50,6 +49,12 @@ export function SceneEnvironment() {
   const showGrid = useScene((s) => s.settings.showGrid)
   const environment = useScene((s) => s.settings.environment)
   const shadows = useScene((s) => s.settings.shadows)
+  const screenHeightM = useScene((s) => s.settings.screenHeightM)
+  // the off-axis room (WindowFrame/RoomGrid/WindowClip) floors at
+  // -screenHeightM/2 — this Blender-style reference grid used to sit at a
+  // fixed -0.25 regardless, so it floated at whatever height that happened
+  // to land relative to the room instead of forming one continuous floor
+  const floorY = -screenHeightM / 2
   return (
     <>
       {environment && <ProceduralIBL />}
@@ -58,7 +63,7 @@ export function SceneEnvironment() {
         <>
           {/* Blender defaults: 1m cells (10 subdivisions of 0.1m each) */}
           <Grid
-            position={[0, GRID_Y, GRID_Z]}
+            position={[0, floorY, GRID_Z]}
             args={[GRID_HALF_EXTENT * 2, GRID_HALF_EXTENT * 2]}
             cellSize={0.1}
             cellThickness={0.5}
@@ -70,11 +75,11 @@ export function SceneEnvironment() {
             fadeStrength={1}
             infiniteGrid
           />
-          <GridAxes />
+          <GridAxes floorY={floorY} />
         </>
       )}
       {shadows && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, GRID_Y, GRID_Z]} receiveShadow>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, floorY, GRID_Z]} receiveShadow>
           <planeGeometry args={[GRID_HALF_EXTENT * 2, GRID_HALF_EXTENT * 2]} />
           <shadowMaterial opacity={0.35} />
         </mesh>

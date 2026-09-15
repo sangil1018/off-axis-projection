@@ -43,6 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // editor build opens ready to arrange the scene; a production viewer forces
   // this off regardless (see EDITOR_ENABLED / editModeActive)
   editMode: import.meta.env.DEV,
+  uiTheme: 'rangefinder',
 }
 
 export type SettingsSlice = {
